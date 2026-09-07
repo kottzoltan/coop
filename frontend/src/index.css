@@ -1,0 +1,96 @@
+@import "tailwindcss";
+
+@theme {
+  /* ICE design tokenek (spec 2. szakasz) */
+  --color-navy: #1c2536;
+  --color-navy-hover: #263049;
+  --color-navy-muted: #2c3750;
+  --color-gold: #b8863f;
+  --color-gold-light: #e9c989;
+  --color-cream: #f6f4ef;
+  --color-cream-muted: #faf8f3;
+  --color-border: #e4e0d6;
+  --color-border-input: #d8d3c4;
+  --color-card: #ffffff;
+  --color-text: #232619;
+  --color-text-muted: #8a8570;
+  --color-text-body: #3a3a2e;
+  --color-success: #2f7a4e;
+  --color-success-bg: #eaf3ec;
+  --color-danger: #b4402c;
+  --color-danger-bg: #f7eae7;
+  --color-warning: #b4791f;
+  --color-warning-bg: #fbf0df;
+  --color-draft: #7a7460;
+  --color-draft-bg: #f1efe9;
+  --color-melodiak-blue: #2C7BD6;
+  --color-melodiak-blue-hover: #1a5fad;
+  --color-melodiak-blue-dark: #0d2d5c;
+  --color-melodiak-blue-mid: #1a4a8a;
+  --color-melodiak-blue-light: #EAF1F7;
+  --color-page-bg: #f4f7fb;
+
+  --font-sans: 'Segoe UI', Inter, system-ui, -apple-system, sans-serif;
+  --radius-card: 12px;
+  --radius-btn: 9px;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background-color: var(--color-cream);
+  color: var(--color-text);
+}
+
+.field-input {
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid var(--color-border-input);
+  background: var(--color-card);
+  padding: 8px 10px;
+  font-size: 13.5px;
+  color: var(--color-text);
+  outline: none;
+}
+
+.field-input:focus {
+  border-color: var(--color-gold);
+  box-shadow: 0 0 0 2px rgba(184, 134, 63, 0.15);
+}
+
+.btn-melodiak {
+  border-radius: var(--radius-btn);
+  background: var(--color-melodiak-blue);
+  padding: 0.625rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: white;
+  transition: background-color 0.15s;
+}
+
+.btn-melodiak:hover {
+  background: var(--color-melodiak-blue-hover);
+}
+
+.btn-melodiak-outline {
+  border-radius: 9999px;
+  border: 2px solid white;
+  padding: 0.625rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: white;
+  transition: background-color 0.15s;
+}
+
+.btn-melodiak-outline:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}

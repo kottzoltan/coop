@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ICE — Bérszámfejtés</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: 'Segoe UI', Roboto, -apple-system, sans-serif; background: #F6F4EF; color: #232619; }
+  input, select, button, textarea { font: inherit; }
+  .app { display: flex; min-height: 100vh; }
+
+  .sidebar { width: 208px; background: #1C2536; color: #CBD0DA; padding: 20px 14px; flex-shrink: 0; }
+  .brand { display: flex; align-items: center; gap: 8px; padding: 0 8px 22px; border-bottom: 1px solid #2C3750; margin-bottom: 16px; }
+  .brand-mark { width: 26px; height: 26px; border-radius: 7px; background: #E9C989; color: #1C2536; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; }
+  .brand-name { font-weight: 700; font-size: 14px; color: #fff; }
+  .nav-item { display: flex; align-items: center; gap: 9px; padding: 9px 10px; border-radius: 8px; font-size: 13px; font-weight: 600; margin-bottom: 2px; cursor: pointer; color: #9AA1B4; }
+  .nav-item.active { background: #2C3750; color: #fff; }
+
+  .main { flex: 1; padding: 22px 26px; overflow: auto; }
+  .card { background: #fff; border: 1px solid #E4E0D6; border-radius: 12px; }
+  .btn-ghost { display: inline-flex; align-items: center; gap: 6px; padding: 8px 13px; border-radius: 9px; border: 1px solid #D8D3C4; background: #fff; color: #3A3A2E; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .btn-primary { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 9px; border: 1px solid #1C2536; background: #1C2536; color: #F6F4EF; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .btn-ghost:hover { background: #FAF8F3; }
+  .btn-primary:hover { background: #263049; }
+  .btn-ghost.sm, .btn-primary.sm { padding: 5px 10px; font-size: 12px; border-radius: 7px; }
+  .btn-ghost.xs, .btn-primary.xs { padding: 3px 7px; font-size: 11px; border-radius: 6px; }
+  .field-input { font-size: 12.5px; padding: 7px 9px; border-radius: 8px; border: 1px solid #D8D3C4; outline: none; background: #fff; color: #232619; width: 100%; }
+  .label { font-size: 11px; font-weight: 600; color: #8A8570; text-transform: uppercase; letter-spacing: .04em; display: block; margin-bottom: 4px; }
+  .field { display: flex; flex-direction: column; }
+  .checkbox-row { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #3A3A2E; }
+
+  .badge { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+  .dot { width: 6px; height: 6px; border-radius: 999px; }
+  .status-Jóváhagyott, .status-Számfejtett { background: #EAF3EC; color: #2F7A4E; }
+  .status-Elutasított { background: #F7EAE7; color: #B4402C; }
+  .status-Piszkozat { background: #F1EFE9; color: #7A7460; }
+  .status-Lezárt { background: #FBF0DF; color: #B4791F; }
+  .letter-badge { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; font-size: 10.5px; font-weight: 800; color: #fff; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th { text-align: left; padding: 8px 9px; font-size: 10px; font-weight: 700; color: #8A8570; text-transform: uppercase; letter-spacing: .03em; background: #FAF8F3; border-bottom: 1px solid #E4E0D6; white-space: nowrap; }
+  td { padding: 8px 9px; color: #3A3A2E; border-bottom: 1px solid #EFECE3; white-space: nowrap; }
+  tr.row:hover { background: #FBFAF6; cursor: pointer; }
+  .link { color: #1C4E7A; text-decoration: underline; cursor: pointer; }
+  .filter-th input, .filter-th select { width: 100%; }
+  .tag { font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 6px; background: #F7EAE7; color: #B4402C; margin: 1px 2px 1px 0; display: inline-block; }
+  .icon-btn { border: none; background: none; cursor: pointer; color: #8A8570; padding: 3px 5px; border-radius: 6px; font-size: 13px; }
+  .icon-btn:hover { background: #F1EFE9; color: #1C2536; }
+  .section-head-bar { display: flex; align-items: center; gap: 8px; background: #2C5C8A; color: #fff; font-weight: 700; font-size: 13px; padding: 10px 14px; border-radius: 8px; margin: 18px 0 0; cursor: pointer; }
+  .section-body { border: 1px solid #E4E0D6; border-top: none; border-radius: 0 0 8px 8px; padding: 16px; margin-bottom: 4px; }
+  .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px 20px; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px 20px; }
+  .grid4 { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px 18px; }
+
+  .overlay { position: fixed; inset: 0; background: rgba(20,20,10,.4); display: none; align-items: center; justify-content: center; z-index: 50; padding: 20px; overflow-y: auto; }
+  .overlay.open { display: flex; }
+  .modal { width: 460px; padding: 20px; max-height: 90vh; overflow-y: auto; }
+  .modal.wide { width: 800px; }
+  .modal.xwide { width: 1180px; }
+  .toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); background: #1C2536; color: #F6F4EF; padding: 11px 18px; border-radius: 10px; font-size: 13.5px; font-weight: 600; box-shadow: 0 8px 24px rgba(0,0,0,.18); z-index: 60; display: none; align-items: center; gap: 8px; }
+  .toast.show { display: flex; }
+  .action-menu { position: absolute; top: 40px; right: 0; background: #fff; border: 1px solid #E4E0D6; border-radius: 10px; box-shadow: 0 10px 28px rgba(20,20,10,.14); width: 300px; z-index: 30; padding: 6px; display: none; max-height: 480px; overflow-y: auto; }
+  .action-menu.open { display: block; }
+  .action-item { display: flex; align-items: center; gap: 9px; width: 100%; padding: 7px 10px; background: none; border: none; border-radius: 7px; cursor: pointer; font-size: 12.5px; color: #333; text-align: left; }
+  .action-item:hover { background: #F6F4EF; }
+  .sep { height: 1px; background: #E4E0D6; margin: 5px 4px; }
+  .remove-x { position: absolute; top: 10px; right: 10px; width: 22px; height: 22px; border-radius: 50%; background: #F7EAE7; color: #B4402C; border: none; cursor: pointer; font-size: 13px; line-height: 1; }
+  .subcard { border: 1px solid #E4E0D6; border-radius: 10px; padding: 16px; position: relative; margin-bottom: 12px; }
+
+  .tabs-strip { display: flex; gap: 4px; border-bottom: 1px solid #D8D3C4; margin-bottom: 16px; flex-wrap: wrap; }
+  .tab-item { display: flex; align-items: center; gap: 6px; padding: 9px 14px; border-radius: 8px 8px 0 0; font-size: 12.5px; font-weight: 600; cursor: pointer; background: #EFEAE0; color: #6B6455; }
+  .tab-item.active { background: #fff; color: #1C2536; border: 1px solid #D8D3C4; border-bottom: none; }
+  .tab-item .tclose { color: #9A9584; margin-left: 4px; }
+  .controlling-row { display: inline-flex; gap: 3px; }
+  .cal-grid-th { position: sticky; top: 0; }
+  .weekend-row { background: #FAF8F3; }
+  .highlight-row { background: #FCF6E4; }
+  .help-box { background: #EAF1F7; color: #1C4E7A; font-size: 11.5px; padding: 8px 12px; border-radius: 8px; margin-bottom: 10px; }
+  .segment { display: inline-flex; background: #F1EFE9; border-radius: 9px; padding: 3px; gap: 2px; }
+  .segment button { border: none; background: none; padding: 7px 14px; border-radius: 7px; font-size: 12.5px; font-weight: 600; color: #8A8570; cursor: pointer; }
+  .segment button.active { background: #fff; color: #1C2536; box-shadow: 0 1px 2px rgba(0,0,0,.06); }
+  .diak-search-row { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-bottom: 1px solid #EFECE3; }
+  .diak-search-row:last-child { border-bottom: none; }
+  .diak-search-row.assigned { opacity: .55; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="sidebar">
+    <div class="brand"><div class="brand-mark">I</div><div class="brand-name">ICE</div></div>
+    <div class="nav-item">Szövetkezeti tagok</div>
+    <div class="nav-item">Partnerek</div>
+    <div class="nav-item">Projektek</div>
+    <div class="nav-item active">Bérszámfejtés</div>
+  </div>
+  <div class="main" id="main"></div>
+</div>
+
+<!-- Új munkalap (több blokk) -->
+<div class="overlay" id="newMunkalapOverlay">
+  <div class="card modal wide">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-size:16px;font-weight:700;color:#1C2536;">Új munkalap</div>
+      <button onclick="closeModal('newMunkalapOverlay')" style="background:none;border:none;cursor:pointer;color:#9A9584;font-size:18px;">×</button>
+    </div>
+    <div id="ml_blocks" style="margin-top:14px;"></div>
+    <button class="btn-ghost sm" onclick="addMlBlock()">+ Újabb munkalap hozzáadása a mentéshez</button>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:18px;border-top:1px solid #E4E0D6;padding-top:14px;">
+      <button class="btn-ghost" onclick="closeModal('newMunkalapOverlay')">Mégse</button>
+      <button class="btn-primary" onclick="createMunkalapok()">💾 Létrehozás</button>
+    </div>
+  </div>
+</div>
+
+<!-- Új diák hozzáadása -->
+<div class="overlay" id="newDiakOverlay">
+  <div class="card modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-size:16px;font-weight:700;color:#1C2536;">Új diák hozzáadása</div>
+      <button onclick="closeModal('newDiakOverlay')" style="background:none;border:none;cursor:pointer;color:#9A9584;font-size:18px;">×</button>
+    </div>
+    <input class="field-input" id="nd_search" placeholder="Keresés név vagy adószám alapján…" style="margin-top:14px;" oninput="renderDiakChoices()">
+    <label class="checkbox-row" style="margin-top:10px;"><input type="checkbox" id="nd_minden" onchange="renderDiakChoices()"> Minden diák megjelenítése (nem csak az érvényes tagsággal rendelkezők)</label>
+    <div id="nd_count" style="font-size:12px;color:#8A8570;margin-top:8px;"></div>
+    <div id="nd_list" style="margin-top:6px;max-height:280px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;"></div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:18px;">
+      <button class="btn-ghost" onclick="closeModal('newDiakOverlay')">Mégse</button>
+      <button class="btn-primary" onclick="addDiakokToMunkalap()">Hozzáadás</button>
+    </div>
+  </div>
+</div>
+
+<!-- Diák csere -->
+<div class="overlay" id="swapDiakOverlay">
+  <div class="card modal" style="width:380px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-size:16px;font-weight:700;color:#1C2536;">Diák csere</div>
+      <button onclick="closeModal('swapDiakOverlay')" style="background:none;border:none;cursor:pointer;color:#9A9584;font-size:18px;">×</button>
+    </div>
+    <div style="font-size:12.5px;color:#8A8570;margin-top:10px;">A rögzített munkaidő adatok megmaradnak, csak a diák személye változik.</div>
+    <select class="field-input" id="swap_select" style="margin-top:10px;"></select>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px;">
+      <button class="btn-ghost" onclick="closeModal('swapDiakOverlay')">Mégse</button>
+      <button class="btn-primary" onclick="confirmSwapDiak()">Csere</button>
+    </div>
+  </div>
+</div>
+
+<!-- Jelenlétek hozzárendelése beosztáskezelőből -->
+<div class="overlay" id="hrmAssignOverlay">
+  <div class="card modal wide">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-size:16px;font-weight:700;color:#1C2536;">Jelenlétek hozzárendelése beosztáskezelőből</div>
+      <button onclick="closeModal('hrmAssignOverlay')" style="background:none;border:none;cursor:pointer;color:#9A9584;font-size:18px;">×</button>
+    </div>
+    <div style="font-size:12.5px;color:#8A8570;margin-top:10px;">A kiválasztott diákok a rögzített beosztáskezelő-műszakokkal együtt kerülnek a munkalaphoz.</div>
+    <div id="hrm_pick_list" style="margin-top:10px;display:flex;flex-direction:column;gap:6px;max-height:300px;overflow-y:auto;"></div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px;">
+      <button class="btn-ghost" onclick="closeModal('hrmAssignOverlay')">Mégse</button>
+      <button class="btn-primary" onclick="confirmHrmAssign()">Hozzárendelés</button>
+    </div>
+  </div>
+</div>
+
+<!-- Jelenléti naptár (tömeges nap kitöltés) -->
+<div class="overlay" id="naptarOverlay">
+  <div class="card modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-size:16px;font-weight:700;color:#1C2536;">Jelenléti naptár</div>
+      <button onclick="closeModal('naptarOverlay')" style="background:none;border:none;cursor:pointer;color:#9A9584;font-size:18px;">×</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+      <button class="btn-ghost sm" onclick="naptarSelectAll(true)">Összes kijelölése</button>
+      <button class="btn-ghost sm" onclick="naptarSelectAll(false)">Összes megszüntetése</button>
+    </div>
+    <div id="naptar_grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:12px;"></div>
+    <div class="grid3" style="margin-top:14px;">
+      <label class="field"><span class="label">Kifizetési kód</span><select class="field-input" id="naptar_kod"></select></label>
+      <label class="field"><span class="label">Munkaidő kezdete</span><input class="field-input" id="naptar_tol" value="08:00"></label>
+      <label class="field"><span class="label">Munkaidő vége</span><input class="field-input" id="naptar_ig" value="16:00"></label>
+    </div>
+    <div id="naptar_summary" style="font-size:12.5px;color:#8A8570;margin-top:10px;"></div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:18px;">
+      <button class="btn-ghost" onclick="closeModal('naptarOverlay')">Mégse</button>
+      <button class="btn-primary" onclick="applyNaptar()">Rögzítés a munkalapon</button>
+    </div>
+  </div>
+</div>
+
+<!-- Diák jelenlétek (havi naptár-rács) -->
+<div class="overlay" id="diakDetailOverlay">
+  <div class="card modal xwide" id="diak_detail_content"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const HU_WEEKDAYS = ["vasárnap","hétfő","kedd","szerda","csütörtök","péntek","szombat"];
+const STATUS_LETTER = { "Piszkozat":{l:"P", c:"#8A8570"}, "Lezárt":{l:"L", c:"#B8863F"}, "Jóváhagyott":{l:"J", c:"#2F7A4E"}, "Elutasított":{l:"E", c:"#B4402C"}, "Számfejtett":{l:"K", c:"#1C4E7A"} };
+
+const PROJECTS = [
+  {id:1, kod:"#9612", nev:"Budaörsi áruház — nyári diákmunka", kirendeltseg:"Meló-Diák Universitas Budapest", temavezeto:"Edőcs Ádám",
+    kifizetesi_kodok:[{id:1, ar:2000, nev:"könnyű fizikai betanított munka, fagyizóban kisegítő feladatok ellátása"},{id:2, ar:2200, nev:"pénztárosi feladatok ellátása"}]},
+  {id:2, kod:"#9450", nev:"Soroksári logisztikai raktár", kirendeltseg:"Meló-Diák Universitas Budapest", temavezeto:"Kiss Andrea",
+    kifizetesi_kodok:[{id:3, ar:2100, nev:"árufeltöltői feladatok ellátása"}]},
+  {id:3, kod:"#9781", nev:"Törökbálinti központi raktár", kirendeltseg:"Meló-Diák Universitas Budapest", temavezeto:"Farkas Dóra",
+    kifizetesi_kodok:[{id:4, ar:2050, nev:"komissiózói feladatok ellátása"}]}
+];
+const OFFICES = ["Budapest","Debrecen","Szeged","Pécs","Győr"];
+const SCHOOLS = ["BME","ELTE","Corvinus","SZTE","PTE","DE","SZE"];
+const STUDENTS = [
+  {id:1, azonosito:700101, nev:"Kovács Anna", adoszam:"8412345678", szuldat:"2002-04-12", tagsag_kezdete:"2023-09-01", tagsag_vege:"2026-10-31", tagsag:"érvényes", nav:"2023-09-01", iroda:"Budapest", iskola:"BME"},
+  {id:2, azonosito:700102, nev:"Nagy Bence", adoszam:"8423456789", szuldat:"2001-11-03", tagsag_kezdete:"2022-02-15", tagsag_vege:"2026-11-30", tagsag:"érvényes", nav:"2022-02-15", iroda:"Debrecen", iskola:"DE"},
+  {id:3, azonosito:700103, nev:"Tóth Eszter", adoszam:"8434567890", szuldat:"2003-02-27", tagsag_kezdete:"2024-01-10", tagsag_vege:"2027-03-31", tagsag:"érvényes", nav:"2024-01-10", iroda:"Szeged", iskola:"SZTE"},
+  {id:4, azonosito:700104, nev:"Szabó Márk", adoszam:"8445678901", szuldat:"2000-08-19", tagsag_kezdete:"2021-09-01", tagsag_vege:"2026-02-28", tagsag:"érvényes", nav:"2021-09-01", iroda:"Pécs", iskola:"PTE"},
+  {id:5, azonosito:700105, nev:"Kiss Zoé", adoszam:"8456789012", szuldat:"2004-01-05", tagsag_kezdete:"2025-02-01", tagsag_vege:"2027-09-30", tagsag:"érvényes", nav:"2025-02-01", iroda:"Győr", iskola:"SZE"},
+  {id:6, azonosito:700106, nev:"Horváth Dávid", adoszam:"8467890123", szuldat:"2002-06-30", tagsag_kezdete:"2023-11-20", tagsag_vege:"2026-08-31", tagsag:"érvényes", nav:"2023-11-20", iroda:"Budapest", iskola:"Corvinus"},
+  {id:7, azonosito:700107, nev:"Varga Léna", adoszam:"8478901234", szuldat:"2001-12-14", tagsag_kezdete:null, tagsag_vege:null, tagsag:"piszkozat", nav:null, iroda:"Budapest", iskola:"ELTE"},
+  {id:8, azonosito:700108, nev:"Molnár Petra", adoszam:"8489012345", szuldat:"2003-09-09", tagsag_kezdete:"2024-09-01", tagsag_vege:"2026-01-01", tagsag:"érvénytelen", nav:"2024-09-01", iroda:"Szeged", iskola:"SZTE"}
+];
+const COLLEAGUES = ["Edőcs Ádám","Kiss Andrea","Farkas Dóra","Konfár Kitti","Dilingai Pál","Mile Dóra"];
+const MUNKALAP_STATUSOK = ["Piszkozat","Lezárt","Jóváhagyott","Elutasított","Számfejtett","Korrekció Piszkozat","Korrekció Lezárt","Korrekció Jóváhagyott","Korrekció Elutasított"];
+
+function makeDiak(student_id, szf_kod_id, entries){
+  const idoadatok = {};
+  entries.forEach(([day, tol, ig]) => { idoadatok[day] = { kod: szf_kod_id, tol, ig }; });
+  return { id: student_id, student_id, cimkek: [], idoadatok, hozzaadva: "2026-06-01" };
+}
+
+let munkalapok = [
+  { id:1, azonosito:"B0009612", nev:"Tesco — júniusi bér", projekt_id:1, temavezeto:"Edőcs Ádám", telj_idoszak:"2026-06", szf_idoszak:"2026-06",
+    tipus_egyosszegu:false, megjegyzes:"", statusz:"Jóváhagyott", letrehozo:"Kott Zoltán", letrehozva:"2026-06-01 09:12:00",
+    diakok:[
+      makeDiak(1,1,[[2,"08:00","16:00"],[3,"08:00","16:00"],[4,"08:00","16:00"],[5,"08:00","16:00"]]),
+      makeDiak(2,1,[[2,"14:00","22:00"],[3,"14:00","22:00"]]),
+      makeDiak(3,1,[[2,"06:00","14:00"]])
+    ]},
+  { id:2, azonosito:"B0009450", nev:"Auchan — júniusi bér", projekt_id:2, temavezeto:"Kiss Andrea", telj_idoszak:"2026-06", szf_idoszak:"2026-06",
+    tipus_egyosszegu:false, megjegyzes:"", statusz:"Piszkozat", letrehozo:"Kott Zoltán", letrehozva:"2026-06-02 10:05:00",
+    diakok:[ makeDiak(6,3,[[5,"07:00","15:00"]]) ]},
+  { id:3, azonosito:"B0009781", nev:"", projekt_id:3, temavezeto:"Farkas Dóra", telj_idoszak:"2026-06", szf_idoszak:"2026-06",
+    tipus_egyosszegu:false, megjegyzes:"", statusz:"Lezárt", letrehozo:"Kott Zoltán", letrehozva:"2026-06-11 08:40:00",
+    diakok:[ makeDiak(4,4,[[10,"08:00","20:00"]]) ]}
+];
+
+const hrmSeed = [
+  {id:1, munkalap:"", projekt:"B0009612", student_id:1, munkanap:"2026-06-06", hrm_tol:"08:00", hrm_ig:"16:00", qr_tol:"", qr_ig:"", tol:"08:00", ig:"16:00", kod:"Alapbér — pénztáros", dirty:false, partner_jov:false},
+  {id:2, munkalap:"", projekt:"B0009612", student_id:3, munkanap:"2026-06-07", hrm_tol:"14:00", hrm_ig:"22:00", qr_tol:"", qr_ig:"", tol:"14:00", ig:"22:00", kod:"Alapbér — pénztáros", dirty:true, partner_jov:false},
+  {id:3, munkalap:"", projekt:"B0009450", student_id:5, munkanap:"2026-06-08", hrm_tol:"07:00", hrm_ig:"15:00", qr_tol:"07:02", qr_ig:"15:05", tol:"07:00", ig:"15:00", kod:"Árufeltöltő", dirty:false, partner_jov:true}
+];
+
+let currentView = "list"; // list | hrm | munkalap
+let listFilters = { szfIdoszak:"", statuszSel: MUNKALAP_STATUSOK.slice(0,5), tipus:"Mind", kirendeltseg:"", brutto:"Mind", oraszam:"Mind", alapber:"Mind", szunet:"Mind" };
+let mlDetailFilters = { diak:"", kifizetes:"", nap:"", cimke:"" };
+let hrmFilters = { dirty:"Mind", rendelve:"Nem", tartozikProjekt:"Mind", partnerJov:"Mind" };
+let diakSearchMode = "munkalapon"; // munkalapon | osszes
+let diakAdvFilters = { q:"", iroda:"", iskola:"", tagsag:"" };
+let diakSearchPicked = new Set();
+let openMunkalapId = null;
+let actionsOpen = false;
+let checkedMunkalapok = new Set();
+let ndPicked = new Set();
+let mlBlockSeq = 1;
+let mlBlocks = [];
+let mlSeq = 100;
+let diakDetailId = null;
+let diakDetailMlId = null;
+let naptarTargetDiakId = null;
+let swapTargetDiakId = null;
+let hrmPicked = new Set();
+
+function esc(s){ return (s===null||s===undefined) ? "" : String(s); }
+function showToast(t){ const el = document.getElementById("toast"); el.innerHTML = "✓ " + t; el.classList.add("show"); clearTimeout(window._tt); window._tt = setTimeout(()=>el.classList.remove("show"), 2600); }
+function openModal(id){ document.getElementById(id).classList.add("open"); }
+function closeModal(id){ document.getElementById(id).classList.remove("open"); }
+function fmt(n){ return Math.round(n).toLocaleString("hu-HU"); }
+
+function hoursBetween(tol, ig){
+  if (!tol || !ig) return 0;
+  const [h1,m1] = tol.split(":").map(Number), [h2,m2] = ig.split(":").map(Number);
+  let mins = (h2*60+m2) - (h1*60+m1);
+  if (mins < 0) mins += 24*60;
+  return mins/60;
+}
+function daysInMonth(yyyymm){ const [y,m] = yyyymm.split("-").map(Number); return new Date(y, m, 0).getDate(); }
+function weekdayName(yyyymm, day){ const [y,m] = yyyymm.split("-").map(Number); return HU_WEEKDAYS[new Date(y, m-1, day).getDay()]; }
+function isWeekend(yyyymm, day){ const [y,m] = yyyymm.split("-").map(Number); const wd = new Date(y, m-1, day).getDay(); return wd===0 || wd===6; }
+
+function kodById(proj, kodId){ return proj.kifizetesi_kodok.find(k=>k.id===kodId); }
+function studentEntries(d){ return Object.entries(d.idoadatok).map(([day, e]) => ({ day: Number(day), ...e })); }
+function studentTotalHours(d){ return studentEntries(d).reduce((s,e)=>s+hoursBetween(e.tol,e.ig),0); }
+function studentGross(d, proj){ return studentEntries(d).reduce((s,e)=>{ const k = kodById(proj, e.kod); return s + (k ? k.ar*hoursBetween(e.tol,e.ig) : 0); },0); }
+function maxShiftHours(d){ return studentEntries(d).reduce((m,e)=>Math.max(m, hoursBetween(e.tol,e.ig)), 0); }
+
+function controllingFlags(ml){
+  const proj = PROJECTS.find(p=>p.id===ml.projekt_id);
+  let magasBrutto=false, magasOraszam=false, kevesAlapber=false, problemasSzunet=false;
+  ml.diakok.forEach(d=>{
+    const gross = studentGross(d, proj), hours = studentTotalHours(d);
+    if (gross > 300000) magasBrutto = true;
+    if (hours > 200) magasOraszam = true;
+    proj.kifizetesi_kodok.forEach(k=>{ if (k.ar < 1900) kevesAlapber = true; });
+    if (maxShiftHours(d) > 9) problemasSzunet = true;
+  });
+  return { magasBrutto, magasOraszam, kevesAlapber, problemasSzunet };
+}
+function controllingIcons(ml, resolved){
+  if (!resolved) return `<span class="controlling-row" title="Magas bruttó bér / Magas óraszám / Kevés alapbér / Problémás szünet">❔❔❔❔</span>`;
+  const f = controllingFlags(ml);
+  const ic = b => b ? "❌" : "✅";
+  return `<span class="controlling-row" title="Magas bruttó bér / Magas óraszám / Kevés alapbér / Problémás szünet">${ic(f.magasBrutto)}${ic(f.magasOraszam)}${ic(f.kevesAlapber)}${ic(f.problemasSzunet)}</span>`;
+}
+
+function kifizetesBontas(diakok, proj){
+  const map = {};
+  diakok.forEach(d => studentEntries(d).forEach(e => {
+    const k = kodById(proj, e.kod);
+    if (!k) return;
+    const h = hoursBetween(e.tol, e.ig);
+    if (!map[k.id]) map[k.id] = { kod: k, mennyiseg: 0, osszeg: 0 };
+    map[k.id].mennyiseg += h;
+    map[k.id].osszeg += h * k.ar;
+  }));
+  return Object.values(map).map(row => ({ ...row, azonosito: 500000 + row.kod.id*37 }));
+}
+
+function render(){
+  const main = document.getElementById("main");
+  let body = "";
+  if (currentView === "munkalap" && openMunkalapId) body = renderMunkalapDetail();
+  else if (currentView === "hrm") body = renderHrmTab();
+  else body = renderMunkalapList();
+  main.innerHTML = renderTabsStrip() + body;
+  wireEvents();
+}
+
+function renderTabsStrip(){
+  const ml = openMunkalapId ? munkalapok.find(x=>x.id===openMunkalapId) : null;
+  return `<div class="tabs-strip">
+    <div class="tab-item ${currentView==='list'?'active':''}" onclick="switchTab('list')">📋 Munkalapok</div>
+    <div class="tab-item ${currentView==='hrm'?'active':''}" onclick="switchTab('hrm')">👤 Jelenlétek (Beosztás kezelő)</div>
+    ${ml ? `<div class="tab-item ${currentView==='munkalap'?'active':''}" onclick="switchTab('munkalap')">
+      <span class="letter-badge" style="background:${STATUS_LETTER[ml.statusz].c};">${STATUS_LETTER[ml.statusz].l}</span>
+      ${esc(ml.azonosito)} — ${esc(ml.nev)||'(névtelen)'}
+      <span class="tclose" onclick="event.stopPropagation(); closeMlTab()">×</span>
+    </div>` : ""}
+  </div>`;
+}
+function switchTab(v){ currentView = v; render(); }
+function closeMlTab(){ openMunkalapId = null; currentView = "list"; render(); }
+
+// ================= MUNKALAP LIST =================
+function passesListFilters(ml, proj){
+  if (listFilters.szfIdoszak && !ml.szf_idoszak.includes(listFilters.szfIdoszak)) return false;
+  if (listFilters.statuszSel.length && !listFilters.statuszSel.includes(ml.statusz)) return false;
+  if (listFilters.tipus !== "Mind") {
+    if (listFilters.tipus === "Egyösszegű" && !ml.tipus_egyosszegu) return false;
+    if (listFilters.tipus === "Normál" && ml.tipus_egyosszegu) return false;
+  }
+  if (listFilters.kirendeltseg && !proj.kirendeltseg.toLowerCase().includes(listFilters.kirendeltseg.toLowerCase())) return false;
+  const resolved = ml.statusz !== "Piszkozat";
+  const f = resolved ? controllingFlags(ml) : null;
+  const checkFlag = (val, flagVal) => { if (val==="Mind" || !resolved) return true; return val==="Igen" ? flagVal : !flagVal; };
+  if (!checkFlag(listFilters.brutto, f?.magasBrutto)) return false;
+  if (!checkFlag(listFilters.oraszam, f?.magasOraszam)) return false;
+  if (!checkFlag(listFilters.alapber, f?.kevesAlapber)) return false;
+  if (!checkFlag(listFilters.szunet, f?.problemasSzunet)) return false;
+  return true;
+}
+function updateListFilters(){
+  listFilters.szfIdoszak = document.getElementById("lf_szfidoszak").value.trim();
+  listFilters.statuszSel = Array.from(document.getElementById("lf_statusz").selectedOptions).map(o=>o.value);
+  listFilters.tipus = document.getElementById("lf_tipus").value;
+  listFilters.kirendeltseg = document.getElementById("lf_kirendeltseg").value.trim();
+  listFilters.brutto = document.getElementById("lf_brutto").value;
+  listFilters.oraszam = document.getElementById("lf_oraszam").value;
+  listFilters.alapber = document.getElementById("lf_alapber").value;
+  listFilters.szunet = document.getElementById("lf_szunet").value;
+  render();
+}
+
+function renderMunkalapList(){
+  const filtered = munkalapok.filter(ml => passesListFilters(ml, PROJECTS.find(p=>p.id===ml.projekt_id)));
+  const rows = filtered.map(ml => {
+    const proj = PROJECTS.find(p=>p.id===ml.projekt_id);
+    const totalGross = ml.diakok.reduce((s,d)=>s+studentGross(d,proj),0);
+    const resolved = ml.statusz !== "Piszkozat";
+    const st = STATUS_LETTER[ml.statusz];
+    return `<tr class="row" data-id="${ml.id}">
+      <td onclick="event.stopPropagation()"><input type="checkbox" class="mlchk" data-id="${ml.id}" ${checkedMunkalapok.has(ml.id)?"checked":""}></td>
+      <td><span class="letter-badge" style="background:${st.c};" title="${ml.statusz}">${st.l}</span></td>
+      <td>${esc(ml.azonosito)}</td>
+      <td>${esc(proj.kod)}</td>
+      <td style="max-width:200px;white-space:normal;">${esc(proj.nev)}</td>
+      <td style="max-width:160px;white-space:normal;">${esc(ml.nev) || "—"}</td>
+      <td>${esc(proj.kirendeltseg)}</td>
+      <td>${esc(ml.temavezeto)}</td>
+      <td>${esc(ml.telj_idoszak)}</td><td>${esc(ml.szf_idoszak)}</td>
+      <td>${ml.diakok.length}</td>
+      <td>${fmt(totalGross)} Ft</td>
+      <td style="max-width:140px;white-space:normal;color:#8A8570;">${esc(ml.megjegyzes)||"—"}</td>
+      <td>${esc(ml.letrehozo)}</td><td>${esc(ml.letrehozva)}</td>
+      <td>${controllingIcons(ml, resolved)}</td>
+      <td style="text-align:right;" onclick="event.stopPropagation()">
+        ${ml.statusz==="Piszkozat" ? `<button class="icon-btn" title="Törlés" onclick="deleteMunkalap(${ml.id})">🗑</button><button class="icon-btn" title="Lezárás" onclick="closeMunkalapById(${ml.id})">🔒</button>` : ""}
+        ${ml.statusz==="Lezárt" ? `<button class="icon-btn" title="Vissza piszkozatra" onclick="setMlStatus(${ml.id},'Piszkozat')">↺</button><button class="icon-btn" title="Jóváhagyás" onclick="setMlStatus(${ml.id},'Jóváhagyott')">✔</button><button class="icon-btn" title="Elutasítás" onclick="setMlStatus(${ml.id},'Elutasított')">➖</button>` : ""}
+        ${ml.statusz==="Jóváhagyott" ? `<button class="icon-btn" title="Folyószámlára emelés (végleges!)" onclick="liftToAccount(${ml.id})">$</button><button class="icon-btn" title="Vissza lezártra" onclick="setMlStatus(${ml.id},'Lezárt')">↺</button>` : ""}
+        <button class="icon-btn" title="Megtekintés" onclick="openMunkalap(${ml.id})">👁</button>
+      </td>
+    </tr>`;
+  }).join("");
+
+  return `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">
+      <div><div style="font-size:20px;font-weight:700;color:#1C2536;">Bérszámfejtés</div>
+        <div style="font-size:13px;color:#8A8570;margin-top:2px;">${filtered.length} / ${munkalapok.length} munkalap</div></div>
+      <div style="display:flex;gap:8px;align-items:center;position:relative;">
+        <button class="btn-ghost" id="actionsBtn">⋮ Műveletek</button>
+        <div class="action-menu ${actionsOpen?'open':''}" id="actionsMenu">
+          <button class="action-item" onclick="mlImportToast('Munkalap jelenlét import (Projekt alapján)')">⬆ Munkalap jelenlét import (Projekt alapján)</button>
+          <button class="action-item" onclick="mlImportToast('Munkalap jelenlét import sablon')">⬇ Munkalap jelenlét import sablon</button>
+          <button class="action-item" onclick="mlImportToast('Munkalap jelenlét import sablon (Projekt alapján)')">⬇ Munkalap jelenlét import sablon (Projekt alapján)</button>
+          <button class="action-item" onclick="mlImportToast('Munkalap diák import sablon (Adószám alapján)')">⬇ Munkalap diák import sablon (Adószám alapján)</button>
+          <div class="sep"></div>
+          <button class="action-item" onclick="mlImportToast('Munkalapok XLSX')">📄 Munkalapok XLSX</button>
+          <button class="action-item" onclick="mlImportToast('Diák összesítő XLSX')">📄 Diák összesítő XLSX</button>
+          <button class="action-item" onclick="mlImportToast('Diák összesítő - Részletes XLSX')">📄 Diák összesítő - Részletes XLSX</button>
+          <button class="action-item" onclick="mlImportToast('Diák hiányossági lista XLSX')">📄 Diák hiányossági lista XLSX</button>
+          <button class="action-item" onclick="mlImportToast('Névszerinti összesítő [Részletes][Pótlékolt] XLSX')">📄 Névszerinti összesítő [Részletes][Pótlékolt] XLSX</button>
+          <button class="action-item" onclick="mlImportToast('Munkaszámonként, kifizetésenként PDF')">📄 Munkaszámonként, kifizetésenként PDF</button>
+        </div>
+        <button class="btn-ghost sm" onclick="bulkStatus('Jóváhagyott')">Kijelöltek jóváhagyása</button>
+        <button class="btn-primary" onclick="openNewMunkalapModal()">+ Új munkalap</button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px;padding:16px;">
+      <div class="grid4">
+        <label class="field"><span class="label">Számfejtési időszak</span><input class="field-input" id="lf_szfidoszak" value="${esc(listFilters.szfIdoszak)}" placeholder="ÉÉÉÉ-HH" onchange="updateListFilters()"></label>
+        <label class="field"><span class="label">Munkalap státusz</span><select class="field-input" id="lf_statusz" multiple style="height:74px;" onchange="updateListFilters()">${MUNKALAP_STATUSOK.map(s=>`<option ${listFilters.statuszSel.includes(s)?'selected':''}>${s}</option>`).join("")}</select></label>
+        <label class="field"><span class="label">Munkalap típus</span><select class="field-input" id="lf_tipus" onchange="updateListFilters()"><option ${listFilters.tipus==="Mind"?"selected":""}>Mind</option><option ${listFilters.tipus==="Normál"?"selected":""}>Normál</option><option ${listFilters.tipus==="Egyösszegű"?"selected":""}>Egyösszegű</option></select></label>
+        <label class="field"><span class="label">Kirendeltség</span><input class="field-input" id="lf_kirendeltseg" value="${esc(listFilters.kirendeltseg)}" placeholder="pl. Budapest" onchange="updateListFilters()"></label>
+      </div>
+      <div class="grid4" style="margin-top:12px;">
+        <label class="field"><span class="label">$ Magas bruttó bér?</span><select class="field-input" id="lf_brutto" onchange="updateListFilters()">${["Mind","Igen","Nem"].map(o=>`<option ${listFilters.brutto===o?"selected":""}>${o}</option>`).join("")}</select></label>
+        <label class="field"><span class="label">🕐 Magas óraszám?</span><select class="field-input" id="lf_oraszam" onchange="updateListFilters()">${["Mind","Igen","Nem"].map(o=>`<option ${listFilters.oraszam===o?"selected":""}>${o}</option>`).join("")}</select></label>
+        <label class="field"><span class="label">📻 Kevés alapbér?</span><select class="field-input" id="lf_alapber" onchange="updateListFilters()">${["Mind","Igen","Nem"].map(o=>`<option ${listFilters.alapber===o?"selected":""}>${o}</option>`).join("")}</select></label>
+        <label class="field"><span class="label">📝 Problémás szünet?</span><select class="field-input" id="lf_szunet" onchange="updateListFilters()">${["Mind","Igen","Nem"].map(o=>`<option ${listFilters.szunet===o?"selected":""}>${o}</option>`).join("")}</select></label>
+      </div>
+      <div style="margin-top:12px;"><button class="btn-ghost sm" onclick="resetListFilters()">Szűrők törlése</button></div>
+    </div>
+
+    <div class="card" style="margin-top:14px;overflow:hidden;overflow-x:auto;">
+      <table><thead><tr>
+        <th></th><th>Státusz</th><th>#</th><th>Projekt szám</th><th>Partner / Projekt neve</th><th>Megnevezés</th><th>Kirendeltség</th><th>Témavezető</th>
+        <th>Telj. időszak</th><th>Számf. időszak</th><th>Diákok</th><th>Összesen</th><th>Megjegyzés</th><th>Létrehozó</th><th>Létrehozva</th><th>Controlling</th><th></th>
+      </tr></thead>
+      <tbody>${rows || `<tr><td colspan="17" style="text-align:center;color:#9A9584;padding:28px;">Nincs a szűrésnek megfelelő munkalap.</td></tr>`}</tbody></table>
+    </div>`;
+}
+function resetListFilters(){
+  listFilters = { szfIdoszak:"", statuszSel: MUNKALAP_STATUSOK.slice(0,5), tipus:"Mind", kirendeltseg:"", brutto:"Mind", oraszam:"Mind", alapber:"Mind", szunet:"Mind" };
+  render();
+}
+function mlImportToast(label){ showToast(`${label} — indítva.`); actionsOpen=false; render(); }
+function bulkStatus(status){
+  if (!checkedMunkalapok.size) { showToast("Jelölj ki legalább egy munkalapot."); return; }
+  munkalapok.forEach(ml => { if (checkedMunkalapok.has(ml.id) && ml.statusz==="Lezárt") ml.statusz = status; });
+  showToast(`${checkedMunkalapok.size} munkalap: ${status}`);
+  checkedMunkalapok.clear();
+  render();
+}
+function deleteMunkalap(id){ munkalapok = munkalapok.filter(x=>x.id!==id); showToast("Munkalap törölve."); render(); }
+function closeMunkalapById(id){ const ml = munkalapok.find(x=>x.id===id); if (!ml.diakok.length){ showToast("Adj hozzá legalább egy diákot a lezárás előtt."); return;} ml.statusz="Lezárt"; showToast("Munkalap lezárva."); render(); }
+function setMlStatus(id, status){ munkalapok.find(x=>x.id===id).statusz = status; showToast(`Munkalap státusza: ${status}`); render(); }
+function liftToAccount(id){ munkalapok.find(x=>x.id===id).statusz = "Számfejtett"; showToast("Folyószámlára emelve — a művelet nem vonható vissza."); render(); }
+
+// ================= JELENLÉTEK (BEOSZTÁS KEZELŐ) TAB =================
+function renderHrmTab(){
+  const filtered = hrmSeed.filter(r => {
+    if (hrmFilters.dirty !== "Mind" && (hrmFilters.dirty==="Igen") !== r.dirty) return false;
+    if (hrmFilters.rendelve !== "Mind") {
+      const assigned = !!r.munkalap;
+      if ((hrmFilters.rendelve==="Igen") !== assigned) return false;
+    }
+    if (hrmFilters.tartozikProjekt !== "Mind" && (hrmFilters.tartozikProjekt==="Igen") !== !!r.projekt) return false;
+    if (hrmFilters.partnerJov !== "Mind" && (hrmFilters.partnerJov==="Igen") !== r.partner_jov) return false;
+    return true;
+  });
+  const rows = filtered.map(r => {
+    const stu = STUDENTS.find(s=>s.id===r.student_id);
+    return `<tr>
+      <td><input type="checkbox"></td>
+      <td>${esc(r.munkalap)||"—"}</td><td>${esc(r.projekt)}</td><td>${stu.id}</td><td>${esc(stu.adoszam)}</td><td>${esc(stu.nev)}</td>
+      <td>${esc(r.munkanap)}</td><td>${esc(r.hrm_tol)}</td><td>${esc(r.hrm_ig)}</td>
+      <td>${esc(r.qr_tol)||"—"}</td><td>${esc(r.qr_ig)||"—"}</td>
+      <td>${esc(r.tol)}</td><td>${esc(r.ig)}</td><td>${esc(r.kod)}</td>
+      <td>${r.dirty ? "Igen" : "Nem"}</td><td>${r.partner_jov ? "Igen" : "Nem"}</td>
+      <td style="text-align:right;"><button class="icon-btn" title="Törlés" onclick="showToast('HRM sor törölve.')">🗑</button><button class="icon-btn" title="Szerkesztés" onclick="showToast('HRM sor szerkesztése.')">✎</button></td>
+    </tr>`;
+  }).join("");
+  return `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">
+      <div><div style="font-size:20px;font-weight:700;color:#1C2536;">Jelenlétek (Beosztás kezelő)</div>
+        <div style="font-size:13px;color:#8A8570;margin-top:2px;">${filtered.length} / ${hrmSeed.length} — a beosztáskezelőben rögzített műszakok.</div></div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn-ghost sm">⇪ QR kód import</button>
+        <button class="btn-ghost sm">Kijelöltek ▾</button>
+      </div>
+    </div>
+    <div class="card" style="margin-top:16px;padding:16px;">
+      <div class="grid4">
+        <label class="field"><span class="label">Dirty?</span><select class="field-input" onchange="updateHrmFilter('dirty', this.value)">${["Mind","Igen","Nem"].map(o=>`<option ${hrmFilters.dirty===o?"selected":""}>${o}</option>`).join("")}</select></label>
+        <label class="field"><span class="label">Munkalaphoz rendelve?</span><select class="field-input" onchange="updateHrmFilter('rendelve', this.value)">${["Nem","Igen","Mind"].map(o=>`<option ${hrmFilters.rendelve===o?"selected":""}>${o}</option>`).join("")}</select></label>
+        <label class="field"><span class="label">ⓘ Tartozik hozzá projekt?</span><select class="field-input" onchange="updateHrmFilter('tartozikProjekt', this.value)">${["Mind","Igen","Nem"].map(o=>`<option ${hrmFilters.tartozikProjekt===o?"selected":""}>${o}</option>`).join("")}</select></label>
+        <label class="field"><span class="label">Partner jóváhagyta?</span><select class="field-input" onchange="updateHrmFilter('partnerJov', this.value)">${["Mind","Igen","Nem"].map(o=>`<option ${hrmFilters.partnerJov===o?"selected":""}>${o}</option>`).join("")}</select></label>
+      </div>
+      <div class="grid2" style="margin-top:12px;">
+        <div class="field"><span class="label">Időszak</span><div style="display:flex;gap:6px;"><input class="field-input" placeholder="Kezdete"><input class="field-input" placeholder="Vége"></div></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:14px;overflow:hidden;overflow-x:auto;">
+      <table><thead><tr>
+        <th></th><th>Munkalap</th><th>Projekt</th><th>Diák ID</th><th>Adószám</th><th>Név</th><th>Munkanap</th>
+        <th>Műszak kezdete (HRM)</th><th>Műszak vége (HRM)</th><th>Műszak kezdete (QR kód)</th><th>Műszak vége (QR kód)</th>
+        <th>Műszak kezdete</th><th>Műszak vége</th><th>Kifizetési kód</th><th>Dirty?</th><th>Partner jóváhagyta</th><th></th>
+      </tr></thead>
+      <tbody>${rows || `<tr><td colspan="17" style="text-align:center;color:#9A9584;padding:28px;">Nincs hozzárendelendő jelenlét.</td></tr>`}</tbody></table>
+    </div>`;
+}
+
+function updateHrmFilter(key, value){ hrmFilters[key] = value; render(); }
+
+// ================= ÚJ MUNKALAP (több blokk) =================
+function addMlBlock(){ mlBlocks.push({ id: mlBlockSeq++ }); renderMlBlocks(); }
+function removeMlBlock(id){ mlBlocks = mlBlocks.filter(b=>b.id!==id); renderMlBlocks(); }
+function renderMlBlocks(){
+  document.getElementById("ml_blocks").innerHTML = mlBlocks.map(b => `
+    <div class="subcard" data-blockid="${b.id}">
+      ${mlBlocks.length>1 ? `<button class="remove-x" onclick="removeMlBlock(${b.id})">−</button>` : ""}
+      <div class="field"><span class="label">Projekt</span><select class="field-input mlb-projekt" onchange="onMlBlockProjektChange(${b.id})">${PROJECTS.map(p=>`<option value="${p.id}">${p.kod} — ${p.nev}</option>`).join("")}</select></div>
+      <div class="field" style="margin-top:10px;"><span class="label">Témavezető <span style="font-weight:400;text-transform:none;color:#9A9584;">(automatikusan a projektről, módosítható)</span></span><select class="field-input mlb-temavezeto">${COLLEAGUES.map(c=>`<option>${c}</option>`).join("")}</select></div>
+      <div class="grid2" style="margin-top:10px;">
+        <label class="field"><span class="label">Teljesítési időszak</span><input class="field-input mlb-telj" value="2026-06" placeholder="ÉÉÉÉ-HH"></label>
+        <label class="field"><span class="label">Számfejtési időszak</span><input class="field-input mlb-szf" value="2026-06" placeholder="ÉÉÉÉ-HH"></label>
+      </div>
+      <label class="checkbox-row" style="margin-top:10px;"><input type="checkbox" class="mlb-egyosszegu"> Munkalap típusa: Egyösszegű?</label>
+      <div class="field" style="margin-top:10px;"><span class="label">Megnevezés</span><input class="field-input mlb-nev" placeholder="pl. Tesco — júniusi bér (nem kötelező)"></div>
+      <div class="field" style="margin-top:10px;"><span class="label">Megjegyzés</span><textarea class="field-input mlb-megjegyzes" rows="2"></textarea></div>
+    </div>`).join("");
+  mlBlocks.forEach(b => onMlBlockProjektChange(b.id));
+}
+function onMlBlockProjektChange(blockId){
+  const block = document.querySelector(`[data-blockid="${blockId}"]`);
+  const projId = Number(block.querySelector(".mlb-projekt").value);
+  const proj = PROJECTS.find(p=>p.id===projId);
+  block.querySelector(".mlb-temavezeto").value = proj.temavezeto;
+}
+function openNewMunkalapModal(){
+  mlBlocks = [{ id: mlBlockSeq++ }];
+  renderMlBlocks();
+  openModal("newMunkalapOverlay");
+}
+function createMunkalapok(){
+  const blocks = document.querySelectorAll("#ml_blocks .subcard");
+  let created = 0, lastId = null;
+  blocks.forEach(block => {
+    const projId = Number(block.querySelector(".mlb-projekt").value);
+    const proj = PROJECTS.find(p=>p.id===projId);
+    const id = ++mlSeq;
+    munkalapok.unshift({
+      id, azonosito: "B0" + proj.kod.replace("#","0"), nev: block.querySelector(".mlb-nev").value,
+      projekt_id: projId, temavezeto: block.querySelector(".mlb-temavezeto").value,
+      telj_idoszak: block.querySelector(".mlb-telj").value, szf_idoszak: block.querySelector(".mlb-szf").value,
+      tipus_egyosszegu: block.querySelector(".mlb-egyosszegu").checked, megjegyzes: block.querySelector(".mlb-megjegyzes").value,
+      statusz: "Piszkozat", letrehozo: "Kott Zoltán", letrehozva: "2026-07-05 00:00:00", diakok: []
+    });
+    created++; lastId = id;
+  });
+  closeModal("newMunkalapOverlay");
+  showToast(`${created} munkalap létrehozva.`);
+  openMunkalap(lastId);
+}
+
+// ================= MUNKALAP DETAIL =================
+function openMunkalap(id){ openMunkalapId = id; currentView = "munkalap"; render(); }
+
+let sectionsOpen = { fejlec: true, szurok: false, osszesito: true, diakok: true };
+function toggleSection(name){ sectionsOpen[name] = !sectionsOpen[name]; render(); }
+
+function renderMunkalapDetail(){
+  const ml = munkalapok.find(x=>x.id===openMunkalapId);
+  const proj = PROJECTS.find(p=>p.id===ml.projekt_id);
+  const editable = ml.statusz === "Piszkozat" || ml.statusz === "Elutasított";
+  const bontas = kifizetesBontas(ml.diakok, proj);
+  const bontasTotalMenny = bontas.reduce((s,r)=>s+r.mennyiseg,0);
+  const bontasTotalOsszeg = bontas.reduce((s,r)=>s+r.osszeg,0);
+  const diakokTotal = ml.diakok.reduce((s,d)=>s+studentGross(d,proj),0);
+
+  const filteredDiakok = ml.diakok.filter(d => {
+    const stu = STUDENTS.find(s=>s.id===d.student_id);
+    const cimkek = stu.tagsag !== "érvényes" ? ["tagság probléma"] : [];
+    if (mlDetailFilters.diak && d.student_id !== Number(mlDetailFilters.diak)) return false;
+    if (mlDetailFilters.kifizetes && !studentEntries(d).some(e => e.kod === Number(mlDetailFilters.kifizetes))) return false;
+    if (mlDetailFilters.nap && !d.idoadatok[Number(mlDetailFilters.nap)]) return false;
+    if (mlDetailFilters.cimke && !cimkek.includes(mlDetailFilters.cimke)) return false;
+    return true;
+  });
+
+  const diakRows = filteredDiakok.map(d => {
+    const stu = STUDENTS.find(s=>s.id===d.student_id);
+    const hours = studentTotalHours(d);
+    const gross = studentGross(d, proj);
+    const cimkek = [];
+    if (stu.tagsag !== "érvényes") cimkek.push("tagság probléma");
+    return `<tr class="row" data-diak="${d.id}">
+      <td>${stu.tagsag==="érvényes" ? "🟢" : "🟠"}</td>
+      <td>${stu.azonosito}</td>
+      <td class="link" onclick="event.stopPropagation(); openDiakDetail(${d.id})">${esc(stu.nev)}</td>
+      <td>${esc(stu.szuldat)}</td><td>${esc(stu.adoszam)}</td><td>${esc(stu.nav)||"—"}</td>
+      <td>${esc(stu.tagsag_kezdete)||"—"}</td><td>${esc(stu.tagsag_vege)||"—"}</td>
+      <td>${hours.toFixed(1)} óra</td><td>${fmt(gross)} Ft</td>
+      <td>${cimkek.map(c=>`<span class="tag">${c}</span>`).join("")||"—"}</td>
+      <td>${esc(d.hozzaadva)}</td>
+      <td style="text-align:right;" onclick="event.stopPropagation()">
+        <button class="icon-btn" title="Megnyitás" onclick="openDiakDetail(${d.id})">👁</button>
+        ${editable ? `<button class="icon-btn" title="Diák csere" onclick="openSwapDiak(${d.id})">⇄</button><button class="icon-btn" title="Törlés" onclick="removeStudentFromMl(${d.id})">🗑</button>` : ""}
+      </td>
+    </tr>`;
+  }).join("");
+
+  return `
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:6px;">
+      <div></div>
+      <div style="display:flex;gap:8px;position:relative;">
+        <button class="btn-primary sm" onclick="showToast('Munkalap mentve.')">💾 Mentés</button>
+        <button class="btn-ghost sm" id="mlDetailActionsBtn">⋮ Műveletek</button>
+        <div class="action-menu ${actionsOpen?'open':''}" id="mlDetailActionsMenu" style="width:320px;">
+          <button class="action-item" onclick="mlImportToast('Munkanap export [Munkalap jelenlét importhoz] XLSX')">📄 Munkanap export [Munkalap jelenlét importhoz] XLSX</button>
+          <div class="sep"></div>
+          <button class="action-item" onclick="mlImportToast('Összesítő [Lista] XLSX')">📄 Összesítő [Lista] XLSX</button>
+          <button class="action-item" onclick="mlImportToast('Összesítő [Lista - egységenként] XLSX')">📄 Összesítő [Lista - egységenként] XLSX</button>
+          <button class="action-item" onclick="mlImportToast('Összesítő [Részletes] XLSX')">📄 Összesítő [Részletes] XLSX</button>
+          <button class="action-item" onclick="mlImportToast('Összesítő [Kifizetések] XLSX')">📄 Összesítő [Kifizetések] XLSX</button>
+          <button class="action-item" onclick="mlImportToast('Összesítő [Diákonként, kifizetésenként, pótlékonként] XLSX')">📄 Összesítő [Diákonként, kifizetésenként, pótlékonként] XLSX</button>
+          <div class="sep"></div>
+          <button class="action-item" onclick="mlImportToast('Napi összesítő [Egyszerű] XLSX')">📄 Napi összesítő [Egyszerű] XLSX</button>
+          <button class="action-item" onclick="mlImportToast('Napi összesítő [Egyszerű] PDF')">📄 Napi összesítő [Egyszerű] PDF</button>
+          <button class="action-item" onclick="mlImportToast('Napi összesítő [Részletes] XLSX')">📄 Napi összesítő [Részletes] XLSX</button>
+          <button class="action-item" onclick="mlImportToast('Napi összesítő [Részletes] PDF')">📄 Napi összesítő [Részletes] PDF</button>
+          <button class="action-item" onclick="mlImportToast('Napi összesítő [Kifizetések] PDF')">📄 Napi összesítő [Kifizetések] PDF</button>
+          <div class="sep"></div>
+          <button class="action-item" onclick="mlImportToast('Névszerinti összesítő [Egyszerű] XLSX')">📄 Névszerinti összesítő [Egyszerű] XLSX</button>
+          <button class="action-item" onclick="mlImportToast('Névszerinti összesítő [Egyszerű] PDF')">📄 Névszerinti összesítő [Egyszerű] PDF</button>
+          <button class="action-item" onclick="mlImportToast('Névszerinti összesítő [Részletes] XLSX')">📄 Névszerinti összesítő [Részletes] XLSX</button>
+          <button class="action-item" onclick="mlImportToast('Névszerinti összesítő [Részletes][Pótlékolt] XLSX')">📄 Névszerinti összesítő [Részletes][Pótlékolt] XLSX</button>
+          <button class="action-item" onclick="mlImportToast('Névszerinti összesítő [Részletes] PDF')">📄 Névszerinti összesítő [Részletes] PDF</button>
+          <button class="action-item" onclick="mlImportToast('Névszerinti összesítő [Kifizetések] PDF')">📄 Névszerinti összesítő [Kifizetések] PDF</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-head-bar" onclick="toggleSection('fejlec')">📇 Fejléc ${sectionsOpen.fejlec?'▾':'▸'}</div>
+    ${sectionsOpen.fejlec ? `<div class="section-body">
+      <div class="grid3">
+        <label class="field"><span class="label">Projekt</span><div style="font-size:13.5px;font-weight:600;">${esc(proj.kod)} — ${esc(proj.nev)}</div></label>
+        <label class="field"><span class="label">Témavezető</span><input class="field-input" value="${esc(ml.temavezeto)}" ${editable?"":"disabled"}></label>
+        <label class="field"><span class="label">Kirendeltség</span><div style="font-size:13.5px;">${esc(proj.kirendeltseg)}</div></label>
+      </div>
+      <div class="grid3" style="margin-top:12px;">
+        <label class="field"><span class="label">Teljesítési időszak</span><input class="field-input" value="${esc(ml.telj_idoszak)}" ${editable?"":"disabled"}></label>
+        <label class="field"><span class="label">Számfejtési időszak</span><input class="field-input" value="${esc(ml.szf_idoszak)}" ${editable?"":"disabled"}></label>
+        <label class="checkbox-row" style="align-self:end;"><input type="checkbox" ${ml.tipus_egyosszegu?"checked":""} ${editable?"":"disabled"}> Egyösszegű munkalap</label>
+      </div>
+      <div class="grid2" style="margin-top:12px;">
+        <label class="field"><span class="label">Megnevezés</span><input class="field-input" value="${esc(ml.nev)}" ${editable?"":"disabled"}></label>
+        <label class="field"><span class="label">Megjegyzés</span><textarea class="field-input" rows="2" ${editable?"":"disabled"}>${esc(ml.megjegyzes)}</textarea></label>
+      </div>
+    </div>` : ""}
+
+    <div class="section-head-bar" onclick="toggleSection('szurok')">🔎 Szűrők ${sectionsOpen.szurok?'▾':'▸'}</div>
+    ${sectionsOpen.szurok ? `<div class="section-body"><div class="grid4">
+      <label class="field"><span class="label">Diák</span><select class="field-input" onchange="updateMlDetailFilter('diak', this.value)">
+        <option value="">Kattints ide a választáshoz</option>
+        ${ml.diakok.map(d=>{ const stu = STUDENTS.find(s=>s.id===d.student_id); return `<option value="${d.student_id}" ${mlDetailFilters.diak===String(d.student_id)?"selected":""}>${esc(stu.nev)}</option>`; }).join("")}
+      </select></label>
+      <label class="field"><span class="label">Kifizetés</span><select class="field-input" onchange="updateMlDetailFilter('kifizetes', this.value)">
+        <option value="">Kattints ide a választáshoz</option>
+        ${proj.kifizetesi_kodok.map(k=>`<option value="${k.id}" ${mlDetailFilters.kifizetes===String(k.id)?"selected":""}>${fmt(k.ar)} Ft/óra - ${esc(k.nev)}</option>`).join("")}
+      </select></label>
+      <label class="field"><span class="label">Nap</span><select class="field-input" onchange="updateMlDetailFilter('nap', this.value)">
+        <option value="">Kattints ide a választáshoz</option>
+        ${Array.from({length:daysInMonth(ml.szf_idoszak)},(_,i)=>i+1).map(n=>`<option value="${n}" ${mlDetailFilters.nap===String(n)?"selected":""}>${String(n).padStart(2,"0")} (${weekdayName(ml.szf_idoszak,n)})</option>`).join("")}
+      </select></label>
+      <label class="field"><span class="label">Diák címke</span><select class="field-input" onchange="updateMlDetailFilter('cimke', this.value)">
+        <option value="">Kattints ide a választáshoz</option>
+        <option value="tagság probléma" ${mlDetailFilters.cimke==="tagság probléma"?"selected":""}>tagság probléma</option>
+      </select></label>
+    </div>
+    <div style="margin-top:12px;"><button class="btn-ghost sm" onclick="resetMlDetailFilters()">Szűrők törlése</button></div>
+    </div>` : ""}
+
+    <div class="section-head-bar" onclick="toggleSection('osszesito')">💰 Összesítő ${sectionsOpen.osszesito?'▾':'▸'}</div>
+    ${sectionsOpen.osszesito ? `<div class="section-body">
+      <div style="font-weight:600;font-size:13px;margin-bottom:8px;">Kifizetés bontás</div>
+      <div class="card" style="overflow:hidden;overflow-x:auto;">
+        <table><thead><tr><th>Azonosító</th><th>Megnevezés</th><th>Egységár</th><th>Mennyiség</th><th>Összesen</th><th>Típus</th></tr></thead>
+        <tbody>
+          ${bontas.map(r=>`<tr><td>${r.azonosito}</td><td style="max-width:260px;white-space:normal;">${esc(r.kod.nev)}</td><td>${fmt(r.kod.ar)} Ft</td><td>${r.mennyiseg.toFixed(1)}</td><td>${fmt(r.osszeg)} Ft</td><td>Ft/óra</td></tr>`).join("") || `<tr><td colspan="6" style="text-align:center;color:#9A9584;padding:16px;">Nincs rögzített kifizetés.</td></tr>`}
+          <tr style="font-weight:700;background:#FAF8F3;"><td colspan="3"></td><td>${bontasTotalMenny.toFixed(1)}</td><td>${fmt(bontasTotalOsszeg)} Ft</td><td></td></tr>
+        </tbody></table>
+      </div>
+    </div>` : ""}
+
+    <div class="section-head-bar" onclick="toggleSection('diakok')">👥 Diákok ${sectionsOpen.diakok?'▾':'▸'}</div>
+    ${sectionsOpen.diakok ? `<div class="section-body">
+      <div class="help-box">ⓘ Gyorsgombok: <b>Shift+U</b> — Új diák.</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
+        <div class="segment">
+          <button class="${diakSearchMode==='munkalapon'?'active':''}" onclick="setDiakSearchMode('munkalapon')">Munkalapon lévők (${ml.diakok.length})</button>
+          <button class="${diakSearchMode==='osszes'?'active':''}" onclick="setDiakSearchMode('osszes')">Teljes tagságból keresés</button>
+        </div>
+        ${editable ? `<button class="btn-ghost sm" onclick="openHrmAssign()">👤 Jelenlétek hozzárendelése beosztáskezelőből</button>` : ""}
+      </div>
+
+      ${diakSearchMode === "munkalapon" ? `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <div style="font-size:13px;color:#3A3A2E;">Összesítés: <b>${fmt(diakokTotal)} Ft</b> · Találatok: 1 - ${filteredDiakok.length} Összesen: ${ml.diakok.length}</div>
+          ${editable ? `<button class="btn-primary sm" onclick="openNewDiakModal()">+ Új diák</button>` : ""}
+        </div>
+        <div class="card" style="overflow:hidden;overflow-x:auto;">
+          <table><thead><tr>
+            <th>Státusz</th><th>Azonosító</th><th>Név</th><th>Születési dátum</th><th>Adószám</th><th>NAV Bejelentés dátuma</th>
+            <th>Tagság kezdete</th><th>Tagság vége</th><th>Mennyiség</th><th>Összeg</th><th>Címkék</th><th>Hozzáadás dátuma</th><th></th>
+          </tr></thead>
+          <tbody>${diakRows || `<tr><td colspan="13" style="text-align:center;color:#9A9584;padding:22px;">Ehhez a munkalaphoz még nincs diák hozzárendelve.</td></tr>`}</tbody></table>
+        </div>
+      ` : renderAdvancedDiakSearch(ml, editable)}
+    </div>` : ""}
+  `;
+}
+
+function setDiakSearchMode(mode){ diakSearchMode = mode; diakSearchPicked = new Set(); render(); }
+
+function diakSearchResultsHTML(ml, editable){
+  const usedIds = ml.diakok.map(d=>d.student_id);
+  const q = diakAdvFilters.q.trim().toLowerCase();
+  const results = STUDENTS.filter(s=>{
+    if (q && !s.nev.toLowerCase().includes(q) && !s.adoszam.includes(q)) return false;
+    if (diakAdvFilters.iroda && s.iroda !== diakAdvFilters.iroda) return false;
+    if (diakAdvFilters.iskola && s.iskola !== diakAdvFilters.iskola) return false;
+    if (diakAdvFilters.tagsag && s.tagsag !== diakAdvFilters.tagsag) return false;
+    return true;
+  });
+  const rows = results.map(s => {
+    const assigned = usedIds.includes(s.id);
+    return `<div class="diak-search-row ${assigned?'assigned':''}">
+      <input type="checkbox" ${assigned?"disabled":""} ${diakSearchPicked.has(s.id)?"checked":""} onchange="toggleDiakSearchPick(${s.id}, this.checked)">
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:600;color:#1C2536;font-size:13.5px;">${esc(s.nev)} <span style="font-weight:400;color:#9A9584;font-size:12px;">#${s.azonosito}</span></div>
+        <div style="font-size:12px;color:#8A8570;">${esc(s.adoszam)} · ${esc(s.iroda)} · ${esc(s.iskola)}</div>
+      </div>
+      <span class="badge status-${s.tagsag==='érvényes'?'Jóváhagyott':(s.tagsag==='piszkozat'?'Piszkozat':'Elutasított')}" style="font-size:11px;">${esc(s.tagsag)}</span>
+      ${assigned ? `<span class="tag" style="background:#EAF3EC;color:#2F7A4E;">már a munkalapon</span>` : ""}
+    </div>`;
+  }).join("");
+
+  return `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <div style="font-size:12.5px;color:#8A8570;">${results.length} / ${STUDENTS.length} tag a szűrésnek megfelelően — a szürkített sorok már a munkalapon vannak.</div>
+      ${editable ? `<button class="btn-primary sm" onclick="addPickedDiakokFromSearch()">Kijelöltek hozzáadása a munkalaphoz (${diakSearchPicked.size})</button>` : ""}
+    </div>
+    <div class="card" style="overflow:hidden;">
+      ${rows || `<div style="padding:22px;text-align:center;color:#9A9584;font-size:13px;">Nincs a szűrésnek megfelelő tag.</div>`}
+    </div>`;
+}
+
+function renderAdvancedDiakSearch(ml, editable){
+  return `
+    <div class="card" style="padding:14px;margin-bottom:12px;">
+      <div class="grid4">
+        <label class="field"><span class="label">Keresés (név / adószám)</span><input class="field-input" id="diak_adv_q" value="${esc(diakAdvFilters.q)}" oninput="updateDiakAdvFilterLive('q', this.value)" placeholder="pl. Kovács vagy 8412345678"></label>
+        <label class="field"><span class="label">Iroda</span><select class="field-input" onchange="updateDiakAdvFilterLive('iroda', this.value)">
+          <option value="">Minden iroda</option>${OFFICES.map(o=>`<option ${diakAdvFilters.iroda===o?"selected":""}>${o}</option>`).join("")}
+        </select></label>
+        <label class="field"><span class="label">Iskola</span><select class="field-input" onchange="updateDiakAdvFilterLive('iskola', this.value)">
+          <option value="">Minden iskola</option>${SCHOOLS.map(s=>`<option ${diakAdvFilters.iskola===s?"selected":""}>${s}</option>`).join("")}
+        </select></label>
+        <label class="field"><span class="label">Tagság státusz</span><select class="field-input" onchange="updateDiakAdvFilterLive('tagsag', this.value)">
+          <option value="">Mind</option>
+          <option ${diakAdvFilters.tagsag==='érvényes'?"selected":""}>érvényes</option>
+          <option ${diakAdvFilters.tagsag==='piszkozat'?"selected":""}>piszkozat</option>
+          <option ${diakAdvFilters.tagsag==='érvénytelen'?"selected":""}>érvénytelen</option>
+        </select></label>
+      </div>
+      <div style="margin-top:10px;"><button class="btn-ghost sm" onclick="resetDiakAdvFilters()">Szűrők törlése</button></div>
+    </div>
+    <div id="diak_search_results">${diakSearchResultsHTML(ml, editable)}</div>`;
+}
+function refreshDiakSearchResults(){
+  const container = document.getElementById("diak_search_results");
+  if (!container) return;
+  const ml = munkalapok.find(x=>x.id===openMunkalapId);
+  const editable = ml.statusz === "Piszkozat" || ml.statusz === "Elutasított";
+  container.innerHTML = diakSearchResultsHTML(ml, editable);
+}
+function updateDiakAdvFilterLive(key, value){ diakAdvFilters[key] = value; refreshDiakSearchResults(); }
+function resetDiakAdvFilters(){ diakAdvFilters = { q:"", iroda:"", iskola:"", tagsag:"" }; render(); }
+function toggleDiakSearchPick(id, checked){ checked ? diakSearchPicked.add(id) : diakSearchPicked.delete(id); refreshDiakSearchResults(); }
+function addPickedDiakokFromSearch(){
+  const ml = munkalapok.find(x=>x.id===openMunkalapId);
+  if (!diakSearchPicked.size) { showToast("Jelölj ki legalább egy tagot."); return; }
+  let nextId = Math.max(0, ...ml.diakok.map(d=>d.id)) + 1;
+  diakSearchPicked.forEach(sid => { ml.diakok.push({ id: nextId++, student_id: sid, cimkek: [], idoadatok: {}, hozzaadva: "2026-07-05" }); });
+  const count = diakSearchPicked.size;
+  diakSearchPicked = new Set();
+  showToast(`${count} tag hozzáadva a munkalaphoz.`);
+  render();
+}
+
+function updateMlDetailFilter(key, value){ mlDetailFilters[key] = value; render(); }
+function resetMlDetailFilters(){ mlDetailFilters = { diak:"", kifizetes:"", nap:"", cimke:"" }; render(); }
+
+function removeStudentFromMl(did){
+  const ml = munkalapok.find(x=>x.id===openMunkalapId);
+  ml.diakok = ml.diakok.filter(x=>x.id!==did);
+  showToast("Diák törölve a munkalapról.");
+  render();
+}
+function openSwapDiak(did){
+  swapTargetDiakId = did;
+  const ml = munkalapok.find(x=>x.id===openMunkalapId);
+  const used = ml.diakok.map(d=>d.student_id);
+  document.getElementById("swap_select").innerHTML = STUDENTS.filter(s=>!used.includes(s.id)).map(s=>`<option value="${s.id}">${s.nev} (${s.adoszam})</option>`).join("");
+  openModal("swapDiakOverlay");
+}
+function confirmSwapDiak(){
+  const ml = munkalapok.find(x=>x.id===openMunkalapId);
+  const d = ml.diakok.find(x=>x.id===swapTargetDiakId);
+  const newSid = Number(document.getElementById("swap_select").value);
+  d.student_id = newSid;
+  closeModal("swapDiakOverlay");
+  showToast("Diák kicserélve — a munkaidő adatok megmaradtak.");
+  render();
+}
+function openHrmAssign(){
+  document.getElementById("hrm_pick_list").innerHTML = hrmSeed.map(r=>{
+    const stu = STUDENTS.find(s=>s.id===r.student_id);
+    return `<label class="checkbox-row"><input type="checkbox" class="hrm-pick" value="${r.id}"> ${stu.nev} — ${r.munkanap} ${r.tol}–${r.ig} (${r.kod})</label>`;
+  }).join("");
+  openModal("hrmAssignOverlay");
+}
+function confirmHrmAssign(){
+  const ml = munkalapok.find(x=>x.id===openMunkalapId);
+  const proj = PROJECTS.find(p=>p.id===ml.projekt_id);
+  const picks = Array.from(document.querySelectorAll(".hrm-pick:checked")).map(c=>Number(c.value));
+  if (!picks.length) { showToast("Válassz ki legalább egy sort."); return; }
+  let nextId = Math.max(0, ...ml.diakok.map(d=>d.id)) + 1;
+  picks.forEach(rid => {
+    const r = hrmSeed.find(x=>x.id===rid);
+    const day = Number(r.munkanap.split("-")[2]);
+    const existing = ml.diakok.find(d=>d.student_id===r.student_id);
+    const kodId = proj.kifizetesi_kodok[0]?.id;
+    if (existing) { existing.idoadatok[day] = { kod: kodId, tol: r.tol, ig: r.ig }; }
+    else { ml.diakok.push({ id: nextId++, student_id: r.student_id, cimkek: [], idoadatok: { [day]: { kod: kodId, tol: r.tol, ig: r.ig } }, hozzaadva: "2026-07-05" }); }
+  });
+  closeModal("hrmAssignOverlay");
+  showToast(`${picks.length} jelenlét hozzárendelve a munkalaphoz.`);
+  render();
+}
+
+// --- Új diák ---
+function openNewDiakModal(){
+  ndPicked = new Set();
+  document.getElementById("nd_search").value = "";
+  document.getElementById("nd_minden").checked = false;
+  renderDiakChoices();
+  openModal("newDiakOverlay");
+}
+function renderDiakChoices(){
+  const ml = munkalapok.find(x=>x.id===openMunkalapId);
+  const used = ml.diakok.map(d=>d.student_id);
+  const q = document.getElementById("nd_search").value.trim().toLowerCase();
+  const mindenDiak = document.getElementById("nd_minden").checked;
+  let list = STUDENTS.filter(s => !used.includes(s.id));
+  if (!mindenDiak) list = list.filter(s => s.tagsag === "érvényes");
+  if (q) list = list.filter(s => s.nev.toLowerCase().includes(q) || s.adoszam.includes(q));
+  document.getElementById("nd_count").textContent = `${list.length} találat` + (!mindenDiak ? " (csak érvényes tagságúak)" : "");
+  document.getElementById("nd_list").innerHTML = list.map(s=>`
+    <label class="checkbox-row"><input type="checkbox" class="nd-pick" value="${s.id}" ${ndPicked.has(s.id)?"checked":""} onchange="toggleNdPick(${s.id}, this.checked)">
+      ${s.nev} <span style="color:#9A9584;font-size:12px;">(${s.adoszam})${s.tagsag!=="érvényes" ? ` · tagság: ${s.tagsag}` : ""}</span></label>
+  `).join("") || `<div style="color:#9A9584;font-size:13px;">Nincs a keresésnek megfelelő diák.</div>`;
+}
+function toggleNdPick(id, checked){ checked ? ndPicked.add(id) : ndPicked.delete(id); }
+function addDiakokToMunkalap(){
+  const ml = munkalapok.find(x=>x.id===openMunkalapId);
+  if (!ndPicked.size) { showToast("Válassz ki legalább egy diákot."); return; }
+  let nextId = Math.max(0, ...ml.diakok.map(d=>d.id)) + 1;
+  ndPicked.forEach(sid => { ml.diakok.push({ id: nextId++, student_id: sid, cimkek: [], idoadatok: {}, hozzaadva: "2026-07-05" }); });
+  const count = ndPicked.size; ndPicked = new Set();
+  closeModal("newDiakOverlay");
+  showToast(`${count} diák hozzáadva a munkalaphoz.`);
+  render();
+}
+
+// ================= DIÁK DETAIL (havi naptár-rács) =================
+function openDiakDetail(did){
+  diakDetailId = did;
+  diakDetailMlId = openMunkalapId;
+  renderDiakDetail();
+  openModal("diakDetailOverlay");
+}
+function renderDiakDetail(){
+  const ml = munkalapok.find(x=>x.id===diakDetailMlId);
+  const proj = PROJECTS.find(p=>p.id===ml.projekt_id);
+  const d = ml.diakok.find(x=>x.id===diakDetailId);
+  const stu = STUDENTS.find(s=>s.id===d.student_id);
+  const editable = ml.statusz === "Piszkozat" || ml.statusz === "Elutasított";
+  const bontas = kifizetesBontas([d], proj);
+  const total = bontas.reduce((s,r)=>s+r.osszeg,0);
+  const hideEmpty = document.getElementById("diak_hide_empty")?.checked || false;
+  const nDays = daysInMonth(ml.szf_idoszak);
+
+  let dayRows = "";
+  for (let day=1; day<=nDays; day++){
+    const e = d.idoadatok[day];
+    if (!e && hideEmpty) continue;
+    const weekend = isWeekend(ml.szf_idoszak, day);
+    const hours = e ? hoursBetween(e.tol, e.ig) : 0;
+    const kod = e ? kodById(proj, e.kod) : null;
+    const osszeg = kod ? hours * kod.ar : 0;
+    dayRows += `<tr class="${weekend?'weekend-row':''}">
+      <td>${String(day).padStart(2,"0")} (${weekdayName(ml.szf_idoszak, day)})</td>
+      <td><select class="field-input dg-kod" data-day="${day}" ${editable?"":"disabled"} onchange="onDayCellChange(${day})">
+        <option value="">Kattints ide a választáshoz</option>
+        ${proj.kifizetesi_kodok.map(k=>`<option value="${k.id}" ${e&&e.kod===k.id?"selected":""}>${fmt(k.ar)} Ft/óra - ${k.nev}</option>`).join("")}
+      </select></td>
+      <td><input class="field-input dg-tol" data-day="${day}" value="${e?esc(e.tol):''}" placeholder="Munka kezdete" ${editable?"":"disabled"} onchange="onDayCellChange(${day})"></td>
+      <td><input class="field-input dg-ig" data-day="${day}" value="${e?esc(e.ig):''}" placeholder="Munka vége" ${editable?"":"disabled"} onchange="onDayCellChange(${day})"></td>
+      <td>${e ? hours.toFixed(1) : `<span style="color:#B0AB98;">Mennyiség</span>`}</td>
+      <td id="dg_osszeg_${day}">${e ? fmt(osszeg)+" Ft" : ""}</td>
+      <td style="text-align:right;"><button class="icon-btn" title="Részletek" onclick="showToast('Nap részletei — pótlékok és szünetek.')">👁</button></td>
+    </tr>`;
+  }
+
+  document.getElementById("diak_detail_content").innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-size:16px;font-weight:700;color:#1C2536;">Jelenlétek — <span class="letter-badge" style="background:${STATUS_LETTER[ml.statusz].c};">${STATUS_LETTER[ml.statusz].l}</span> ${esc(ml.azonosito)}</div>
+      <button onclick="closeModal('diakDetailOverlay')" style="background:none;border:none;cursor:pointer;color:#9A9584;font-size:18px;">×</button>
+    </div>
+    <div class="help-box" style="margin-top:10px;">
+      ⓘ Navigáció: ↑ egy sor fel / ↓ egy sor le / → egy cellát előre / ← egy cellát vissza.<br>
+      ⓘ Gyorsgombok: <b>+</b> új sor · <b>Shift+N</b> naptár · <b>Shift+Esc</b> ablak bezárása · <b>Shift+Backspace</b> sor adatainak törlése
+    </div>
+    ${editable ? `<button class="btn-ghost sm" onclick="openNaptarFor(${d.id})">📅 Jelenléti naptár</button>` : ""}
+
+    <div class="grid4" style="margin-top:14px;">
+      <div class="field"><span class="label">Név</span><div style="font-weight:600;">${esc(stu.nev)} <span style="color:#9A9584;font-weight:400;">(#${stu.azonosito})</span></div></div>
+      <div class="field"><span class="label">Születési dátum</span><div>${esc(stu.szuldat)}</div></div>
+      <div class="field"><span class="label">Adószám</span><div>${esc(stu.adoszam)}</div></div>
+      <div class="field"><span class="label">Tagság</span><div>${esc(stu.tagsag_kezdete)||"—"} → ${esc(stu.tagsag_vege)||"—"}</div></div>
+    </div>
+
+    <div style="font-weight:700;font-size:14px;margin-top:16px;">Összesítés <span style="color:#2F7A4E;">${fmt(total)} Ft</span></div>
+    <div class="card" style="margin-top:8px;overflow:hidden;overflow-x:auto;">
+      <table><thead><tr><th>Azonosító</th><th>Megnevezés</th><th>Egységár</th><th>Mennyiség</th><th>Összesen</th><th>Típus</th></tr></thead>
+      <tbody>${bontas.map(r=>`<tr><td>${r.azonosito}</td><td style="max-width:280px;white-space:normal;">${esc(r.kod.nev)}</td><td>${fmt(r.kod.ar)} Ft</td><td>${r.mennyiseg.toFixed(1)}</td><td>${fmt(r.osszeg)} Ft</td><td>Ft/óra</td></tr>`).join("") || `<tr><td colspan="6" style="text-align:center;color:#9A9584;padding:14px;">Nincs rögzített adat.</td></tr>`}</tbody></table>
+    </div>
+
+    <div class="grid2" style="margin-top:14px;">
+      <label class="field"><span class="label">Számfejtési bér</span><select class="field-input"><option>Kattints ide a választáshoz</option>${proj.kifizetesi_kodok.map(k=>`<option>${fmt(k.ar)} Ft/óra - ${k.nev}</option>`).join("")}</select></label>
+      <label class="checkbox-row" style="align-self:end;"><input type="checkbox" id="diak_hide_empty" onchange="renderDiakDetail()"> Üres sorok elrejtése?</label>
+    </div>
+
+    <div style="margin-top:14px;font-size:12.5px;color:#8A8570;">Találatok: 1 - ${nDays} Összesen: ${nDays}</div>
+    <div class="card" style="margin-top:6px;overflow:hidden;overflow-x:auto;max-height:420px;overflow-y:auto;">
+      <table><thead><tr class="cal-grid-th"><th>Nap</th><th>Kifizetési kód</th><th>Munkaidő kezdete</th><th>Munkaidő vége</th><th>Mennyiség</th><th>Összeg</th><th></th></tr></thead>
+      <tbody>${dayRows}</tbody></table>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;border-top:1px solid #E4E0D6;padding-top:14px;">
+      <div style="display:flex;gap:8px;">
+        <button class="btn-ghost sm" onclick="showToast('Diák adatlap megnyitása.')">Diák adatlap</button>
+        <button class="btn-ghost sm" onclick="showToast('Diák munkahelyei megnyitása.')">Diák munkahelyei</button>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button class="icon-btn" title="Előző diák" onclick="navDiak(-1)">←</button>
+        <button class="btn-primary sm" onclick="closeModal('diakDetailOverlay'); render();">Bezár</button>
+        <button class="icon-btn" title="Következő diák" onclick="navDiak(1)">→</button>
+      </div>
+    </div>
+  `;
+}
+function onDayCellChange(day){
+  const ml = munkalapok.find(x=>x.id===diakDetailMlId);
+  const d = ml.diakok.find(x=>x.id===diakDetailId);
+  const kodSel = document.querySelector(`.dg-kod[data-day="${day}"]`);
+  const tol = document.querySelector(`.dg-tol[data-day="${day}"]`).value;
+  const ig = document.querySelector(`.dg-ig[data-day="${day}"]`).value;
+  const kodId = kodSel.value ? Number(kodSel.value) : null;
+  if (!kodId || !tol || !ig) { delete d.idoadatok[day]; }
+  else { d.idoadatok[day] = { kod: kodId, tol, ig }; }
+  renderDiakDetail();
+}
+function navDiak(dir){
+  const ml = munkalapok.find(x=>x.id===diakDetailMlId);
+  const idx = ml.diakok.findIndex(x=>x.id===diakDetailId);
+  const next = ml.diakok[idx+dir];
+  if (!next) { showToast(dir>0 ? "Nincs következő diák." : "Nincs előző diák."); return; }
+  diakDetailId = next.id;
+  renderDiakDetail();
+}
+
+// --- Jelenléti naptár (tömeges kitöltés a diák detail-ből) ---
+let naptarDays = [];
+function openNaptarFor(did){
+  naptarTargetDiakId = did;
+  const ml = munkalapok.find(x=>x.id===diakDetailMlId);
+  const proj = PROJECTS.find(p=>p.id===ml.projekt_id);
+  const n = daysInMonth(ml.szf_idoszak);
+  naptarDays = Array.from({length:n}, (_,i)=>({day:i+1, picked:false}));
+  document.getElementById("naptar_kod").innerHTML = proj.kifizetesi_kodok.map(k=>`<option value="${k.id}">${fmt(k.ar)} Ft/óra - ${k.nev}</option>`).join("");
+  renderNaptarGrid();
+  openModal("naptarOverlay");
+}
+function renderNaptarGrid(){
+  document.getElementById("naptar_grid").innerHTML = naptarDays.map(d=>`
+    <button class="btn-ghost sm" style="padding:8px 2px;${d.picked?'background:#1C2536;color:#fff;border-color:#1C2536;':''}" onclick="toggleNaptarDay(${d.day})">${d.day}</button>
+  `).join("");
+  document.getElementById("naptar_summary").textContent = `${naptarDays.filter(d=>d.picked).length} nap kijelölve.`;
+}
+function toggleNaptarDay(day){ const d = naptarDays.find(x=>x.day===day); d.picked = !d.picked; renderNaptarGrid(); }
+function naptarSelectAll(val){ naptarDays.forEach(d=>d.picked=val); renderNaptarGrid(); }
+function applyNaptar(){
+  const ml = munkalapok.find(x=>x.id===diakDetailMlId);
+  const d = ml.diakok.find(x=>x.id===naptarTargetDiakId);
+  const kodId = Number(document.getElementById("naptar_kod").value);
+  const tol = document.getElementById("naptar_tol").value;
+  const ig = document.getElementById("naptar_ig").value;
+  const picked = naptarDays.filter(x=>x.picked);
+  if (!picked.length) { showToast("Jelölj ki legalább egy napot."); return; }
+  picked.forEach(p => { d.idoadatok[p.day] = { kod: kodId, tol, ig }; });
+  closeModal("naptarOverlay");
+  showToast(`${picked.length} nap munkaideje rögzítve.`);
+  renderDiakDetail();
+}
+
+function wireEvents(){
+  document.querySelectorAll(".row[data-id]").forEach(r=>r.addEventListener("click", ()=>openMunkalap(Number(r.dataset.id))));
+  document.getElementById("actionsBtn")?.addEventListener("click", ()=>{ actionsOpen = !actionsOpen; render(); });
+  document.getElementById("mlDetailActionsBtn")?.addEventListener("click", ()=>{ actionsOpen = !actionsOpen; render(); });
+  document.querySelectorAll(".mlchk").forEach(c=>c.addEventListener("change", ()=>{
+    const id = Number(c.dataset.id);
+    c.checked ? checkedMunkalapok.add(id) : checkedMunkalapok.delete(id);
+  }));
+}
+
+render();
+</script>
+</body>
+</html>

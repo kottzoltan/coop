@@ -1,0 +1,27 @@
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+.netlify
+.DS_Store
+FK/_txt/
+*.local
+~$*
+
+# Build outputs
+frontend/dist/
+backend/dist/
+shared/dist/
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Root ICE demo clutter (imports live under data/)
+/*.xlsx
+/*.pdf

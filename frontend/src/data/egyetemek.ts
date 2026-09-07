@@ -1,0 +1,55 @@
+import type { MagyarIntezmeny } from './intezmeny-kereses';
+
+function e(nev: string, varos: string, aliasok: string[] = []): MagyarIntezmeny {
+  return {
+    id: `egy:${nev}`,
+    nev,
+    tipus: 'egyetem',
+    varos,
+    aliasok,
+  };
+}
+
+/** Magyarországi felsőoktatási intézmények — állami és jelentős magán egyetemek */
+export const MAGYAR_EGYETEMEK: MagyarIntezmeny[] = [
+  e('Eötvös Loránd Tudományegyetem', 'Budapest', ['ELTE', 'Eötvös Loránd', 'Eotvos Lorand']),
+  e('Budapesti Műszaki és Gazdaságtudományi Egyetem', 'Budapest', ['BME', 'Műegyetem', 'Muszaki']),
+  e('Budapesti Gazdasági Egyetem', 'Budapest', ['BGE', 'Corvinus', 'Budapesti Corvinus Egyetem']),
+  e('Semmelweis Egyetem', 'Budapest', ['Semmelweis', 'SOTE']),
+  e('Óbudai Egyetem', 'Budapest', ['Óbudai', 'Obudai']),
+  e('Pázmány Péter Katolikus Egyetem', 'Budapest', ['PPKE', 'Pázmány', 'Pazmany']),
+  e('Nemzeti Közszolgálati Egyetem', 'Budapest', ['NKE', 'Nemzeti Kozszolgalati']),
+  e('Moholy-Nagy Művészeti Egyetem', 'Budapest', ['MOME', 'Moholy-Nagy']),
+  e('Liszt Ferenc Zeneművészeti Egyetem', 'Budapest', ['LFZE', 'Liszt Ferenc']),
+  e('Magyar Képzőművészeti Egyetem', 'Budapest', ['MKE', 'Képzőművészeti']),
+  e('Magyar Táncművészeti Egyetem', 'Budapest', ['MTE', 'Táncművészeti']),
+  e('Metropolitan Egyetem', 'Budapest', ['METU', 'Metropolitan']),
+  e('Kodolányi János Egyetem', 'Budapest', ['Kodolányi', 'Kodolanyi']),
+  e('Budapesti Metropolitan Egyetem', 'Budapest', ['METU']),
+  e('International Business School', 'Budapest', ['IBS']),
+  e('Andrássy Gyula Deutschsprachige Universität Budapest', 'Budapest', ['Andrássy', 'Andrassy']),
+  e('McDaniel College Budapest', 'Budapest', ['McDaniel']),
+  e('Közép-európai Egyetem', 'Budapest', ['CEU', 'Central European University']),
+  e('Milton Friedman Egyetem', 'Budapest', ['Milton Friedman', 'Corvinus Friedman']),
+  e('Wesley János Lelkipásztori- és Hittudományi Főiskola', 'Budapest', ['Wesley']),
+  e('Debreceni Egyetem', 'Debrecen', ['DE', 'Debreceni']),
+  e('Szegedi Tudományegyetem', 'Szeged', ['SZTE', 'Szegedi']),
+  e('Pécsi Tudományegyetem', 'Pécs', ['PTE', 'Pécsi', 'Pecsi']),
+  e('Magyar Agrár- és Élettudományi Egyetem', 'Gödöllő', ['MATE', 'Szent István Egyetem', 'SZIE', 'Gödöllő']),
+  e('Széchenyi István Egyetem', 'Győr', ['SZE', 'Széchenyi', 'Szechenyi']),
+  e('Miskolci Egyetem', 'Miskolc', ['ME', 'Miskolci']),
+  e('Pannon Egyetem', 'Veszprém', ['PE', 'Pannon', 'Veszprémi']),
+  e('Soproni Egyetem', 'Sopron', ['SOE', 'Soproni']),
+  e('Károli Gáspár Református Egyetem', 'Budapest', ['KRE', 'Károli', 'Karoli']),
+  e('Eszterházy Károly Katolikus Egyetem', 'Eger', ['EKE', 'Eszterházy', 'Eszterhazy']),
+  e('Dunaújvárosi Egyetem', 'Dunaújváros', ['DUE', 'Dunaujvarosi']),
+  e('Kaposvári Egyetem', 'Kaposvár', ['KE', 'Kaposvári', 'Kaposvari']),
+  e('Neumann János Egyetem', 'Kecskemét', ['NJE', 'Neumann', 'Kecskeméti']),
+  e('Óbudai Egyetem Alba Regia Kara', 'Székesfehérvár', ['Óbudai Székesfehérvár']),
+  e('Pázmány Péter Katolikus Egyetem BTK', 'Piliscsaba', ['PPKE BTK', 'Piliscsaba']),
+  e('Debreceni Református Hittudományi Egyetem', 'Debrecen', ['DRHE']),
+  e('Apor Vilmos Katolikus Főiskola', 'Vác', ['Apor Vilmos']),
+  e('Tokaj-Hegyalja Egyetem', 'Sárospatak', ['Tokaj Hegyalja', 'Sárospatak']),
+  e('Budapesti Nemzetközi Kereskedelmi és Logisztikai Főiskola', 'Budapest', ['BKSzF']),
+  e('Budapesti Kommunikációs és Üzleti Főiskola', 'Budapest', ['BKUF']),
+];

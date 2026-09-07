@@ -1,0 +1,36 @@
+{
+  "name": "coop",
+  "private": true,
+  "version": "0.2.0",
+  "workspaces": [
+    "frontend",
+    "backend",
+    "shared"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=frontend",
+    "dev:backend": "npm run dev --workspace=backend",
+    "preview:static": "python3 -m http.server 8080 --bind 127.0.0.1",
+    "build": "npm run build --workspace=shared && npm run build --workspace=backend && npm run build --workspace=frontend",
+    "build:web": "npm run build --workspace=frontend",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "netlify database migrations apply",
+    "deploy": "npm run build:web && npx netlify deploy --prod",
+    "deploy:preview": "npm run build:web && npx netlify deploy",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspace=shared",
+    "smoke": "npm run build && node scripts/smoke.mjs"
+  },
+  "dependencies": {
+    "@netlify/blobs": "^10.7.9",
+    "@netlify/database": "^1.1.0",
+    "@netlify/identity": "^1.2.0",
+    "drizzle-orm": "beta"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.2.17",
+    "@netlify/functions": "^2.8.2",
+    "drizzle-kit": "beta",
+    "netlify-cli": "^23.12.3"
+  }
+}

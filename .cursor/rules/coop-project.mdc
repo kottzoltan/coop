@@ -1,0 +1,37 @@
+---
+description: Coop projekt alapszabályok — stack, források, FK kézikönyvek, magyar domain
+alwaysApply: true
+---
+
+# Coop projekt szabályok
+
+## Stack
+- Frontend: React + Vite + TypeScript + Tailwind CSS
+- Backend: Node.js + Express + TypeScript
+- Adatbázis: PostgreSQL + Prisma ORM
+- Monorepo: `/frontend`, `/backend`, `/shared`
+
+## Design tokenek
+- navy `#1C2536`, gold `#B8863F` / `#E9C989`, cream `#F6F4EF`, fehér kártyák, border `#E4E0D6`
+
+## Magyar domain
+- NE fordítsd angolra: fedezet, vállalási díj, számfejtési bér, teljesítés igazolás, munkalap, tagság, kifizetési kód stb.
+- `szamfejtesi_berek.vallalasi_dij_id` kötelező FK — fedezetszámítás alapja.
+
+## Források prioritása (minden modul / séma / feature előtt)
+1. **`FK/`** — felhasználói kézikönyvek (`.docx`). Modul-fájl párosítás: `FK/README.md`.
+2. **`Coop_specifikacio.md`** — adatmodell, üzleti szabályok, kereszt-modul integrációk.
+3. **`mocks/coop_*_mock.html`** — vizuális és interakciós referencia (belső `/belso` útvonal).
+4. **`docs/Coop_platform_attekintes.png`** — platform áttekintő infografika.
+
+## Portál struktúra (coop89.netlify.app)
+- **`/`** — portálválasztó (diák / partner / belső)
+- **`/diak`** — diákportál + regisztráció → `POST /api/regisztracio` → Netlify Database
+- **`/partner`** — partnerfelület (FK partnerfelület kézikönyv)
+- **`/belso`** — belső Coop mockok (munkatársak)
+
+A kézikönyvek szövege olvasható: `textutil -convert txt -stdout "FK/fájl.docx"` (macOS).
+
+## FK mappa
+- Kanonikus hely: **`/FK/`** a repo gyökerében — ne mozgasd, ne nevezd át.
+- 18 db SAM felhasználói kézikönyv; minden implementációs lépés előtt olvasd el az adott modulhoz tartozót.

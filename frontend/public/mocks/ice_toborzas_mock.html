@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ICE — Toborzás</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: 'Segoe UI', Roboto, -apple-system, sans-serif; background: #F6F4EF; color: #232619; }
+  input, select, button, textarea { font: inherit; }
+  .app { display: flex; min-height: 100vh; }
+
+  .sidebar { width: 216px; background: #1C2536; color: #CBD0DA; padding: 20px 14px; flex-shrink: 0; }
+  .brand { display: flex; align-items: center; gap: 8px; padding: 0 8px 22px; border-bottom: 1px solid #2C3750; margin-bottom: 16px; }
+  .brand-mark { width: 26px; height: 26px; border-radius: 7px; background: #E9C989; color: #1C2536; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; }
+  .brand-name { font-weight: 700; font-size: 14px; color: #fff; }
+  .nav-item { display: flex; align-items: center; gap: 9px; padding: 9px 10px; border-radius: 8px; font-size: 13px; font-weight: 600; margin-bottom: 2px; cursor: pointer; color: #9AA1B4; }
+  .nav-item.active { background: #2C3750; color: #fff; }
+  .nav-group-label { font-size: 11px; font-weight: 700; color: #6E7690; text-transform: uppercase; letter-spacing: .05em; padding: 10px 10px 4px; }
+  .subnav-item { display: flex; align-items: center; gap: 8px; padding: 7px 10px 7px 26px; border-radius: 7px; font-size: 12.5px; font-weight: 600; margin-bottom: 1px; cursor: pointer; color: #9AA1B4; }
+  .subnav-item.active { background: #2C3750; color: #fff; }
+  .subnav-item.disabled { opacity: .45; cursor: not-allowed; }
+
+  .main { flex: 1; padding: 22px 26px; overflow: auto; }
+  .card { background: #fff; border: 1px solid #E4E0D6; border-radius: 12px; }
+  .btn-ghost { display: inline-flex; align-items: center; gap: 6px; padding: 8px 13px; border-radius: 9px; border: 1px solid #D8D3C4; background: #fff; color: #3A3A2E; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .btn-primary { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 9px; border: 1px solid #1C2536; background: #1C2536; color: #F6F4EF; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .btn-ghost:hover { background: #FAF8F3; }
+  .btn-primary:hover { background: #263049; }
+  .btn-ghost.sm, .btn-primary.sm { padding: 5px 10px; font-size: 12px; border-radius: 7px; }
+  .field-input { font-size: 13px; padding: 8px 10px; border-radius: 8px; border: 1px solid #D8D3C4; outline: none; background: #fff; color: #232619; width: 100%; }
+  .label { font-size: 11px; font-weight: 600; color: #8A8570; text-transform: uppercase; letter-spacing: .04em; display: block; margin-bottom: 4px; }
+  .field { display: flex; flex-direction: column; }
+  .req::after { content: " *"; color: #B4402C; }
+  .checkbox-row { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #3A3A2E; }
+
+  .badge { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+  .dot { width: 6px; height: 6px; border-radius: 999px; }
+  .status-aktív, .status-Felvéve { background: #EAF3EC; color: #2F7A4E; }
+  .status-inaktív, .status-Elutasítva, .status-Visszamondta, .status-Nemelérhető { background: #F7EAE7; color: #B4402C; }
+  .status-Kezeletlen { background: #F1EFE9; color: #7A7460; }
+  .status-Interjú, .status-Önéletrajzotvárunk, .status-Mászmunkáraajánlottuk { background: #FBF0DF; color: #B4791F; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th { text-align: left; padding: 9px 10px; font-size: 10.5px; font-weight: 700; color: #8A8570; text-transform: uppercase; letter-spacing: .03em; background: #FAF8F3; border-bottom: 1px solid #E4E0D6; white-space: nowrap; }
+  td { padding: 9px 10px; color: #3A3A2E; border-bottom: 1px solid #EFECE3; white-space: nowrap; }
+  tr.row:hover { background: #FBFAF6; cursor: pointer; }
+  .link { color: #1C4E7A; text-decoration: underline; cursor: pointer; }
+
+  .tabs { display: flex; gap: 2px; border-bottom: 1px solid #E4E0D6; flex-wrap: wrap; margin-top: 18px; }
+  .tab-btn { display: flex; align-items: center; gap: 6px; padding: 9px 12px; background: none; border: none; cursor: pointer; font-size: 12.5px; font-weight: 600; color: #9A9584; border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; }
+  .tab-btn.active { color: #1C2536; border-bottom: 2px solid #B8863F; }
+
+  .section-head { background: #EAF1F7; color: #1C4E7A; font-weight: 700; font-size: 13px; padding: 9px 14px; border-radius: 8px; margin: 22px 0 14px; }
+  .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px 22px; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 14px 22px; }
+  .icon-btn { border: none; background: none; cursor: pointer; color: #8A8570; padding: 4px 6px; border-radius: 6px; font-size: 14px; }
+  .icon-btn:hover { background: #F1EFE9; color: #1C2536; }
+  .stat-icon { display: inline-flex; align-items: center; gap: 4px; color: #6B7286; font-size: 12.5px; }
+  .toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); background: #1C2536; color: #F6F4EF; padding: 11px 18px; border-radius: 10px; font-size: 13.5px; font-weight: 600; box-shadow: 0 8px 24px rgba(0,0,0,.18); z-index: 60; display: none; align-items: center; gap: 8px; }
+  .toast.show { display: flex; }
+  .ad-preview { position: relative; width: 100%; max-width: 480px; border-radius: 10px; overflow: hidden; background: #1C2536; color: #fff; }
+  .ad-preview img { width: 100%; display: block; opacity: .55; }
+  .ad-preview .badge-logo { position: absolute; top: 14px; right: 14px; background: #2C7BD6; color: #fff; padding: 8px 14px; border-radius: 8px; font-size: 11px; font-weight: 700; }
+  .ad-preview .headline { position: absolute; bottom: 14px; left: 14px; right: 14px; background: rgba(28,78,122,.9); color: #fff; padding: 10px 12px; font-size: 13px; font-weight: 700; text-transform: uppercase; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="sidebar">
+    <div class="brand"><div class="brand-mark">I</div><div class="brand-name">ICE</div></div>
+    <div class="nav-group-label">Toborzás</div>
+    <div class="subnav-item" id="nav-hirdetesek" onclick="setView('hirdetesek')">Hirdetések</div>
+    <div class="subnav-item" id="nav-jelentkezesek" onclick="setView('jelentkezesek')">Jelentkezések</div>
+    <div class="subnav-item disabled" onclick="showToast('Ez a fül egy következő körben készül el.')">Kampányok</div>
+    <div class="subnav-item disabled" onclick="showToast('Ez a fül egy következő körben készül el.')">Kampány résztvevők</div>
+    <div class="subnav-item disabled" onclick="showToast('Ez a fül egy következő körben készül el.')">Egyedi URL</div>
+    <div class="nav-item" style="margin-top:14px;">Szövetkezeti tagok</div>
+    <div class="nav-item">Partnerek</div>
+    <div class="nav-item">Projektek</div>
+    <div class="nav-item">Bérszámfejtés</div>
+  </div>
+  <div class="main" id="main"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const PROJECT_REF = [
+  {kod:"B0359192", nev:"Meló-Diák Országos Diákvállalkozásszervező Kft. (Koton Textil Kft.)", iroda:"Meló-Diák Universitas Budapest", felelos:"Konfár Kitti",
+    kodok:["2000 Ft/óra - Ruhabolti kisegítői feladatok - Árupakolás","2200 Ft/óra - Ruhabolti kisegítői feladatok - Pénztár"]},
+  {kod:"B0472200", nev:"K.M.H. Print Kft", iroda:"Meló-Diák Universitas Budapest", felelos:"Konfár Kitti", kodok:["2100 Ft/óra - Nyomdai kisegítő"]},
+  {kod:"B0472100", nev:"Front Line Magyarország Kft.", iroda:"Meló-Diák Universitas Budapest", felelos:"Edőcs Ádám", kodok:["2000 Ft/óra - Címkézés","2400 Ft/óra - Csomagolás"]},
+  {kod:"B0043100", nev:"Bernstein Kft.", iroda:"Meló-Diák Universitas Budapest", felelos:"Dilingai Pál", kodok:["2500 Ft/óra - Takarítás"]},
+  {kod:"B0190100", nev:"KIPP Car Comfort Systems Hungary Kft.", iroda:"Meló-Diák Universitas Győr", felelos:"Dilingai Pál", kodok:["2200 Ft/óra - Operátor"]},
+  {kod:"B0448700", nev:"Meló-Diák Országos Diákvállalkozásszervező Kft.", iroda:"Meló-Diák Universitas Budapest", felelos:"Konfár Kitti", kodok:["2300 Ft/óra - Pénztáros"]}
+];
+const COLLEAGUES = ["Konfár Kitti","Dilingai Pál","Mile Dóra","Márton Evelin","Edőcs Ádám"];
+const VAROSOK = ["Budapest","Debrecen","Szeged","Vecsés","Biatorbágy","Győr"];
+const BEREZESEK = ["Alapbér","Pótlékos","Megegyezés szerint","Egyéni"];
+const NYELVEK = ["HU","EN"];
+const WEEKDAYS = ["Hét","Ked","Sze","Csü","Pén","Szo","Vas"];
+
+let hirdetesek = [
+  {id:1, aktiv:true, projekt_statusz:true, projektszam:"B0359192", partner:"Meló-Diák Országos Diákvállalkozásszervező Kft.", cim:"Ruházati üzlet raktárkészletének leltározására keresünk diákokat!",
+    nyelv:"HU", toborzo:"Konfár Kitti", varos:"Budapest", megtekintesek:249, jelentkezok:11, elfogadottak:11, letrehozva:"2026.06.20",
+    felelos:"Konfár Kitti", kifizetesi_kod:"2000 Ft/óra - Ruhabolti kisegítői feladatok - Árupakolás", berezes:"Alapbér",
+    extra_varos:"", extra_varmegye:"", munkanapok:["Ked"], szoveges_munkaido:true, munkaido_leiras:"07.07. 8:00-16:00",
+    cimkek:"", min_korhatar:16, oneletrajz:false, telefonszam:true, nyelv_mezo:"HU", erv_datum:"2026-07-17", megjegyzes:"",
+    munkavegzes_helye:"Milsped Warehouse F épület\nAirport City Logistics Park\n2220 Vecsés, Lőrinci út 154.",
+    munkavegzes_idopontja:"2026.07.07 kedd 8:00-16:00 (a munka vége kis mértékben eltérhet, ha hamarabb vége van a feladatoknak)",
+    berezes_szoveg:"bruttó 2000 ft/óra", befejezo_szoveg:"Jelentkezésed várom a konfar.kitti@melodiak.hu címre, a levél tárgya \"Leltár_Vecsés\" legyen!",
+    eloszo_fejlec:"", eloszo_torzs:"Ruházati üzlet raktárkészletének leltározására keresünk diákokat!", eloszo_lablec:"",
+    amit_kinalunk:"", fobb_feladatok:"dobozok mozgatása, előkészítése,\náruk megszámlálása,\na leltározó csapat munkájának támogatása,\naz esetleges eltérések jelzése",
+    elvarasok:"nappalis aktív vagy 25 éves korig passzív hallgatói jogviszony\nminimum korhatár: 16 év",
+    kep_nev:"MD_Aruh_bolti_elado_004.jpg", kep_focim:"Ruházati üzlet raktárkészletének leltározására keresünk diákokat!", kep_alcim:"", kep_alcim_szin:"#ffffff"},
+  {id:2, aktiv:true, projekt_statusz:true, projektszam:"B0472200", partner:"K.M.H. Print Kft", cim:"Középnehéz fizikai munkára keresünk diákokat!",
+    nyelv:"HU", toborzo:"Konfár Kitti", varos:"Budapest", megtekintesek:261, jelentkezok:6, elfogadottak:6, letrehozva:"2026.06.18",
+    felelos:"Konfár Kitti", kifizetesi_kod:"2100 Ft/óra - Nyomdai kisegítő", berezes:"Alapbér", extra_varos:"", extra_varmegye:"",
+    munkanapok:["Hét","Sze","Pén"], szoveges_munkaido:false, munkaido_leiras:"", cimkek:"", min_korhatar:18, oneletrajz:false, telefonszam:true,
+    erv_datum:"2026-07-20", megjegyzes:"", munkavegzes_helye:"", munkavegzes_idopontja:"", berezes_szoveg:"", befejezo_szoveg:"",
+    eloszo_fejlec:"", eloszo_torzs:"Középnehéz fizikai munkára keresünk diákokat!", eloszo_lablec:"", amit_kinalunk:"", fobb_feladatok:"", elvarasok:"",
+    kep_nev:"", kep_focim:"", kep_alcim:"", kep_alcim_szin:"#ffffff"},
+  {id:3, aktiv:true, projekt_statusz:true, projektszam:"B0043100", partner:"Bernstein Kft.", cim:"Takarítói munkakör egy IV. kerületi partnerünknél 2500Ft/h",
+    nyelv:"HU", toborzo:"Dilingai Pál", varos:"Budapest", megtekintesek:163, jelentkezok:3, elfogadottak:3, letrehozva:"2026.06.10",
+    felelos:"Dilingai Pál", kifizetesi_kod:"2500 Ft/óra - Takarítás", berezes:"Alapbér", extra_varos:"", extra_varmegye:"",
+    munkanapok:["Hét","Ked","Sze","Csü","Pén"], szoveges_munkaido:false, munkaido_leiras:"", cimkek:"", min_korhatar:16, oneletrajz:false, telefonszam:true,
+    erv_datum:"2026-07-15", megjegyzes:"", munkavegzes_helye:"", munkavegzes_idopontja:"", berezes_szoveg:"", befejezo_szoveg:"",
+    eloszo_fejlec:"", eloszo_torzs:"Takarítói munkakör egy IV. kerületi partnerünknél 2500Ft/h", eloszo_lablec:"", amit_kinalunk:"", fobb_feladatok:"", elvarasok:"",
+    kep_nev:"", kep_focim:"", kep_alcim:"", kep_alcim_szin:"#ffffff"},
+  {id:4, aktiv:true, projekt_statusz:true, projektszam:"B0472100", partner:"Front Line Magyarország Kft.", cim:"Címkézési munka Biatorbágyon!",
+    nyelv:"HU", toborzo:"Edőcs Ádám", varos:"Biatorbágy", megtekintesek:177, jelentkezok:12, elfogadottak:11, letrehozva:"2026.06.05",
+    felelos:"Edőcs Ádám", kifizetesi_kod:"2000 Ft/óra - Címkézés", berezes:"Alapbér", extra_varos:"", extra_varmegye:"",
+    munkanapok:["Hét","Ked","Sze","Csü","Pén"], szoveges_munkaido:false, munkaido_leiras:"", cimkek:"", min_korhatar:16, oneletrajz:false, telefonszam:true,
+    erv_datum:"2026-07-25", megjegyzes:"", munkavegzes_helye:"", munkavegzes_idopontja:"", berezes_szoveg:"", befejezo_szoveg:"",
+    eloszo_fejlec:"", eloszo_torzs:"Címkézési munka Biatorbágyon!", eloszo_lablec:"", amit_kinalunk:"", fobb_feladatok:"", elvarasok:"",
+    kep_nev:"", kep_focim:"", kep_alcim:"", kep_alcim_szin:"#ffffff"}
+];
+
+let jelentkezesek = [
+  {id:1, hirdetes_id:1, nev:"Tóth Eszter", email:"toth.eszter@example.com", telefon:"+36 30 111 2233", datum:"2026.06.22", statusz:"Felvéve"},
+  {id:2, hirdetes_id:1, nev:"Kovács Anna", email:"kovacs.anna@example.com", telefon:"+36 20 222 3344", datum:"2026.06.22", statusz:"Felvéve"},
+  {id:3, hirdetes_id:1, nev:"Nagy Bence", email:"nagy.bence@example.com", telefon:"+36 70 333 4455", datum:"2026.06.23", statusz:"Interjú"},
+  {id:4, hirdetes_id:1, nev:"Varga Léna", email:"varga.lena@example.com", telefon:"+36 30 444 5566", datum:"2026.06.24", statusz:"Kezeletlen"},
+  {id:5, hirdetes_id:2, nev:"Szabó Márk", email:"szabo.mark@example.com", telefon:"+36 20 555 6677", datum:"2026.06.19", statusz:"Önéletrajzot várunk"},
+  {id:6, hirdetes_id:4, nev:"Kiss Zoé", email:"kiss.zoe@example.com", telefon:"+36 30 666 7788", datum:"2026.06.06", statusz:"Elutasítva"}
+];
+const JELENTKEZES_STATUSOK = ["Kezeletlen","Önéletrajzot várunk","Interjú","Felvéve","Más munkára ajánlottuk","Nem elérhető","Visszamondta","Elutasítva"];
+
+let view = "hirdetesek";
+let selectedAdId = null;
+let adTab = "alap";
+
+function esc(s){ return (s===null||s===undefined) ? "" : String(s); }
+function nl2br(s){ return esc(s).replace(/\n/g,"<br>"); }
+function showToast(text){
+  const t = document.getElementById("toast");
+  t.innerHTML = "✓ " + text;
+  t.classList.add("show");
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => t.classList.remove("show"), 2600);
+}
+function setView(v){ view = v; selectedAdId = null; render(); }
+
+function render(){
+  document.getElementById("nav-hirdetesek").classList.toggle("active", view==="hirdetesek" && !selectedAdId || selectedAdId);
+  document.getElementById("nav-jelentkezesek").classList.toggle("active", view==="jelentkezesek");
+  const main = document.getElementById("main");
+  if (selectedAdId) main.innerHTML = renderAdDetail();
+  else if (view === "jelentkezesek") main.innerHTML = renderJelentkezesekList();
+  else main.innerHTML = renderHirdetesekList();
+  wireEvents();
+}
+
+function renderHirdetesekList(){
+  const rows = hirdetesek.map(h => `<tr class="row" data-id="${h.id}">
+    <td onclick="event.stopPropagation()"><input type="checkbox"></td>
+    <td>${h.aktiv ? "🟢" : "⚪"}</td><td>${h.projekt_statusz ? "🟢" : "⚪"}</td>
+    <td class="link">${esc(h.projektszam)}</td>
+    <td class="link" style="max-width:220px;white-space:normal;">${esc(h.partner)}</td>
+    <td style="max-width:260px;white-space:normal;">${esc(h.cim)}</td>
+    <td>${esc(h.nyelv)}</td><td>${esc(h.toborzo)}</td><td>${esc(h.varos)}</td>
+    <td class="stat-icon">👁 ${h.megtekintesek}</td>
+    <td class="stat-icon" onclick="event.stopPropagation(); openJelentkezesekForAd(${h.id})">👥 ${h.jelentkezok}</td>
+    <td class="stat-icon">👤+ ${h.elfogadottak}</td>
+    <td>${esc(h.letrehozva)}</td>
+    <td style="text-align:right;" onclick="event.stopPropagation()">
+      <button class="icon-btn" title="Jelentkezők" onclick="openJelentkezesekForAd(${h.id})">👥</button>
+      <button class="icon-btn" title="Szerkesztés" onclick="openAd(${h.id})">✎</button>
+      <button class="icon-btn" title="Meghosszabbítás +14 nap" onclick="extendAd(${h.id})">⏱</button>
+      <button class="icon-btn" title="${h.aktiv ? 'Inaktiválás' : 'Aktiválás'}" onclick="toggleAdActive(${h.id})">${h.aktiv ? "⏸" : "▶"}</button>
+      <button class="icon-btn" title="Törlés" onclick="removeAd(${h.id})">🗑</button>
+    </td>
+  </tr>`).join("");
+  return `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">
+      <div><div style="font-size:20px;font-weight:700;color:#1C2536;">Hirdetések</div>
+        <div style="font-size:13px;color:#8A8570;margin-top:2px;">${hirdetesek.length} hirdetés</div></div>
+      <div style="display:flex;gap:8px;"><button class="btn-primary" onclick="openNewAdModal()">+ Új hirdetés</button></div>
+    </div>
+    <div class="card" style="margin-top:18px;overflow:hidden;overflow-x:auto;">
+      <table><thead><tr>
+        <th></th><th>Státusz</th><th>Projekt st.</th><th>Projektszám</th><th>Partner neve</th><th>Hirdetés címe</th><th>Nyelv</th><th>Toborzó</th><th>Város</th><th>Megtekintés</th><th>Jelentkezők</th><th>Elfogadott</th><th>Létrehozva</th><th></th>
+      </tr></thead>
+      <tbody>${rows || `<tr><td colspan="14" style="text-align:center;color:#9A9584;padding:28px;">Nincs hirdetés.</td></tr>`}</tbody></table>
+    </div>`;
+}
+
+function renderJelentkezesekList(filterAdId){
+  const list = filterAdId ? jelentkezesek.filter(j=>j.hirdetes_id===filterAdId) : jelentkezesek;
+  const rows = list.map(j => {
+    const ad = hirdetesek.find(h=>h.id===j.hirdetes_id);
+    return `<tr>
+      <td onclick="event.stopPropagation()"><input type="checkbox" class="jchk" data-id="${j.id}" ${jelChecked.has(j.id)?"checked":""}></td>
+      <td style="font-weight:600;color:#1C2536;">${esc(j.nev)}</td><td>${esc(j.email)}</td><td>${esc(j.telefon)}</td>
+      <td class="link" style="max-width:220px;white-space:normal;">${ad ? esc(ad.cim) : "—"}</td>
+      <td>${esc(j.datum)}</td>
+      <td><span class="badge status-${j.statusz.replace(/\s+/g,'')}"><span class="dot" style="background:currentColor;"></span>${esc(j.statusz)}</span></td>
+      <td style="text-align:right;">
+        <button class="icon-btn" title="Állapot módosítása" onclick="changeJelStatus(${j.id})">🔄</button>
+        <button class="icon-btn" title="Jelentkezés előzményei">🕘</button>
+        <button class="icon-btn" title="Másik munkára jelentkeztetés">↪</button>
+      </td>
+    </tr>`;
+  }).join("");
+  return `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">
+      <div><div style="font-size:20px;font-weight:700;color:#1C2536;">Jelentkezések</div>
+        <div style="font-size:13px;color:#8A8570;margin-top:2px;">${list.length} jelentkezés${filterAdId ? " — szűrve egy hirdetésre" : ""}</div></div>
+      ${filterAdId ? `<button class="btn-ghost" onclick="setView('jelentkezesek')">Összes jelentkezés mutatása</button>` : ""}
+    </div>
+    <div class="card" style="margin-top:18px;padding:12px 14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+      <span style="font-size:12.5px;color:#8A8570;">Tömeges állapotváltozás:</span>
+      <select class="field-input" id="jel_bulk_status" style="width:auto;">${JELENTKEZES_STATUSOK.map(s=>`<option>${s}</option>`).join("")}</select>
+      <button class="btn-ghost sm" onclick="applyBulkJelStatus()">Alkalmaz a kijelöltekre</button>
+    </div>
+    <div class="card" style="margin-top:12px;overflow:hidden;overflow-x:auto;">
+      <table><thead><tr><th></th><th>Név</th><th>E-mail</th><th>Telefon</th><th>Hirdetés</th><th>Jelentkezés dátuma</th><th>Státusz</th><th></th></tr></thead>
+      <tbody>${rows || `<tr><td colspan="8" style="text-align:center;color:#9A9584;padding:28px;">Nincs jelentkezés.</td></tr>`}</tbody></table>
+    </div>`;
+}
+let jelChecked = new Set();
+function changeJelStatus(id){
+  const j = jelentkezesek.find(x => x.id === id);
+  const idx = JELENTKEZES_STATUSOK.indexOf(j.statusz);
+  j.statusz = JELENTKEZES_STATUSOK[(idx+1) % JELENTKEZES_STATUSOK.length];
+  showToast(`Állapot módosítva: ${j.statusz}`);
+  render();
+}
+function applyBulkJelStatus(){
+  if (jelChecked.size === 0) { showToast("Jelölj ki legalább egy jelentkezőt."); return; }
+  const newStatus = document.getElementById("jel_bulk_status").value;
+  jelentkezesek.forEach(j => { if (jelChecked.has(j.id)) j.statusz = newStatus; });
+  showToast(`${jelChecked.size} jelentkező állapota frissítve: ${newStatus}`);
+  jelChecked.clear();
+  render();
+}
+function openJelentkezesekForAd(adId){
+  view = "jelentkezesek"; selectedAdId = null;
+  document.getElementById("main").innerHTML = renderJelentkezesekList(adId);
+  wireEvents();
+  document.getElementById("nav-jelentkezesek").classList.add("active");
+  document.getElementById("nav-hirdetesek").classList.remove("active");
+}
+
+const AD_TABS = [["alap","Alapadatok"],["munka","Munka adatok"],["tartalom","Tartalom"],["kep","Hirdetés kép"]];
+
+function openAd(id){ selectedAdId = id; adTab = "alap"; render(); }
+function backToList(){ selectedAdId = null; render(); }
+
+function renderAdDetail(){
+  const h = hirdetesek.find(x => x.id === selectedAdId);
+  let body = "";
+  if (adTab === "alap") {
+    const proj = PROJECT_REF.find(p => p.kod === h.projektszam) || PROJECT_REF[0];
+    body = `
+      <div class="grid2">
+        <label class="field"><span class="label req">Cím</span><input class="field-input" id="h_cim" value="${esc(h.cim)}"></label>
+        <label class="field"><span class="label req">Projekt</span><select class="field-input" id="h_projekt" onchange="onProjektChange()">${PROJECT_REF.map(p=>`<option value="${p.kod}" ${p.kod===h.projektszam?"selected":""}>${p.kod} - ${p.nev}</option>`).join("")}</select></label>
+      </div>
+      <div class="grid2" style="margin-top:6px;">
+        <div class="field"><span class="label">Partner (a projektből)</span><div id="h_partner_display" style="font-size:13.5px;color:#3A3A2E;">${esc(proj.nev)}</div></div>
+        <div class="field"><span class="label">Iroda (a projektből)</span><div id="h_iroda_display" style="font-size:13.5px;color:#3A3A2E;">${esc(proj.iroda)}</div></div>
+      </div>
+      <div class="grid2" style="margin-top:14px;">
+        <label class="field"><span class="label req">Toborzásért felelős</span><select class="field-input" id="h_felelos">${COLLEAGUES.map(c=>`<option ${c===h.felelos?"selected":""}>${c}</option>`).join("")}</select></label>
+        <label class="field"><span class="label req">Kifizetési kód</span><select class="field-input" id="h_kifizetesikod" onchange="onKifizetesiKodChange()">${proj.kodok.map(k=>`<option ${k===h.kifizetesi_kod?"selected":""}>${k}</option>`).join("")}</select></label>
+      </div>
+      <div class="grid3" style="margin-top:14px;" id="h_berezes_wrap">
+        <label class="field"><span class="label req">Bérezés</span><select class="field-input" id="h_berezes" onchange="onBerezesChange()">${BEREZESEK.map(b=>`<option ${b===h.berezes?"selected":""}>${b}</option>`).join("")}</select></label>
+        <label class="field" id="h_egyeni_wrap" style="display:${h.berezes==='Egyéni'?'flex':'none'};"><span class="label">Egyéni bérezés szövege</span><input class="field-input" id="h_egyeni_ber" value="${esc(h.egyeni_ber||'')}" placeholder="pl. 2 500 Ft/óra"></label>
+        <label class="field"><span class="label req">Város</span><select class="field-input" id="h_varos">${VAROSOK.map(v=>`<option ${v===h.varos?"selected":""}>${v}</option>`).join("")}</select></label>
+      </div>
+      <div class="grid2" style="margin-top:14px;">
+        <label class="field"><span class="label">Extra város</span><input class="field-input" id="h_extravaros" value="${esc(h.extra_varos)}" placeholder="Kattints ide a kereséshez"></label>
+        <label class="field"><span class="label">Extra vármegye</span><input class="field-input" id="h_extravm" value="${esc(h.extra_varmegye)}" placeholder="Kattints ide a választáshoz"></label>
+      </div>
+      <div style="margin-top:16px;">
+        <span class="label">Munkaidő</span>
+        <div style="display:flex;gap:14px;flex-wrap:wrap;">${WEEKDAYS.map(d=>`<label class="checkbox-row"><input type="checkbox" class="h-day" value="${d}" ${h.munkanapok.includes(d)?"checked":""}> ${d}</label>`).join("")}</div>
+      </div>
+      <div class="grid2" style="margin-top:14px;">
+        <label class="checkbox-row" style="align-self:end;"><input type="checkbox" id="h_szoveges" ${h.szoveges_munkaido?"checked":""}> Szöveges munkaidő</label>
+        <label class="field"><span class="label req">Munkaidő leírás</span><input class="field-input" id="h_munkaidoleiras" value="${esc(h.munkaido_leiras)}"></label>
+      </div>
+      <label class="field" style="margin-top:14px;"><span class="label">Címkék <span style="font-weight:400;text-transform:none;color:#9A9584;">(max. 13, ezekre tudnak keresni a diákok)</span></span><input class="field-input" id="h_cimkek" value="${esc(h.cimkek)}" placeholder="pl. raktár, kiskereskedelem, hétvégi"></label>
+      <div class="grid3" style="margin-top:14px;">
+        <label class="field"><span class="label req">Minimum korhatár</span><input class="field-input" id="h_minkor" value="${esc(h.min_korhatar)}"></label>
+        <label class="field"><span class="label req">Nyelv</span><select class="field-input" id="h_nyelv">${NYELVEK.concat(["HU+EN"]).map(n=>`<option ${n===h.nyelv?"selected":""}>${n}</option>`).join("")}</select></label>
+        <label class="field"><span class="label req">Hirdetés érvényességi ideje, láthatósága</span><input class="field-input" id="h_ervdatum" value="${esc(h.erv_datum)}"></label>
+      </div>
+      <div style="display:flex;gap:22px;margin-top:14px;flex-wrap:wrap;">
+        <label class="checkbox-row"><input type="checkbox" id="h_oneletrajz" ${h.oneletrajz?"checked":""}> Önéletrajz szükséges?</label>
+        <label class="checkbox-row"><input type="checkbox" id="h_telefonszam" ${h.telefonszam?"checked":""}> Telefonszám mutatása?</label>
+      </div>
+      <label class="field" style="margin-top:14px;"><span class="label">Megjegyzés</span><textarea class="field-input" id="h_megjegyzes" rows="2">${esc(h.megjegyzes)}</textarea></label>
+
+      <div class="section-head">Jelentkezés beállítások</div>
+      <div class="grid3">
+        <label class="field"><span class="label">"Nem értem el" limit</span><select class="field-input" id="h_nemertemel">${["1 óra","6 óra","24 óra (alapértelmezett)","48 óra"].map(o=>`<option ${o.startsWith(h.nem_ertem_el||'24')?'selected':''}>${o}</option>`).join("")}</select></label>
+        <div class="field" style="grid-column:span 2;"><span class="label">&nbsp;</span><div style="font-size:12px;color:#8A8570;">Ha a jelentkező "Nem érem el" állapotot kap, ennyi idő után áll vissza automatikusan kezeletlen státuszba, így ismét megjelenik a kezelendő jelentkezők listájában.</div></div>
+      </div>
+    `;
+  } else if (adTab === "munka") {
+    body = `
+      <label class="field"><span class="label">Munkavégzés helye</span><textarea class="field-input" id="h_hely" rows="3">${esc(h.munkavegzes_helye)}</textarea></label>
+      <label class="field" style="margin-top:14px;"><span class="label">Munkavégzés időpontja</span><textarea class="field-input" id="h_idopont" rows="2">${esc(h.munkavegzes_idopontja)}</textarea></label>
+      <label class="field" style="margin-top:14px;"><span class="label">Bérezés</span><textarea class="field-input" id="h_berszoveg" rows="2">${esc(h.berezes_szoveg)}</textarea></label>
+      <label class="field" style="margin-top:14px;"><span class="label">Befejező szöveg</span><textarea class="field-input" id="h_befejezo" rows="2">${esc(h.befejezo_szoveg)}</textarea></label>
+    `;
+  } else if (adTab === "tartalom") {
+    body = `
+      <label class="field"><span class="label">Előszó fejléc</span><textarea class="field-input" id="h_eloszofejlec" rows="2">${esc(h.eloszo_fejlec)}</textarea></label>
+      <label class="field" style="margin-top:14px;"><span class="label req">Előszó törzs</span><textarea class="field-input" id="h_eloszotorzs" rows="2">${esc(h.eloszo_torzs)}</textarea></label>
+      <label class="field" style="margin-top:14px;"><span class="label">Előszó lábléc</span><textarea class="field-input" id="h_eloszolablec" rows="2">${esc(h.eloszo_lablec)}</textarea></label>
+      <label class="field" style="margin-top:14px;"><span class="label">Amit kínálunk</span><textarea class="field-input" id="h_kinalunk" rows="2">${esc(h.amit_kinalunk)}</textarea></label>
+      <label class="field" style="margin-top:14px;"><span class="label req">Főbb feladatok</span><textarea class="field-input" id="h_feladatok" rows="4">${esc(h.fobb_feladatok)}</textarea></label>
+      <label class="field" style="margin-top:14px;"><span class="label">Az álláshoz tartozó elvárások</span><textarea class="field-input" id="h_elvarasok" rows="3">${esc(h.elvarasok)}</textarea></label>
+      <label class="field" style="margin-top:14px;"><span class="label">Előnyt jelent</span><textarea class="field-input" id="h_elonyt" rows="2">${esc(h.elonyt_jelent||'')}</textarea></label>
+    `;
+  } else if (adTab === "kep") {
+    body = `
+      <div class="grid2">
+        <label class="field"><span class="label req">Kép fájlnév</span><input class="field-input" id="h_kepnev" value="${esc(h.kep_nev)}" placeholder="pl. MD_Aruh_bolti_elado_004.jpg"></label>
+        <label class="field"><span class="label req">Kép főcím</span><input class="field-input" id="h_kepfocim" value="${esc(h.kep_focim)}"></label>
+      </div>
+      <div class="grid2" style="margin-top:14px;">
+        <label class="field"><span class="label">Kép alcím</span><input class="field-input" id="h_kepalcim" value="${esc(h.kep_alcim)}"></label>
+        <label class="field"><span class="label req">Kép alcím szín</span><input class="field-input" id="h_kepalcimszin" value="${esc(h.kep_alcim_szin)}"></label>
+      </div>
+      <div class="section-head">Előnézet</div>
+      <div class="ad-preview">
+        <img src="https://images.unsplash.com/photo-1556740738-b6a63e27c4df?w=480&h=320&fit=crop" alt="">
+        <div class="badge-logo">👥 meló-diák</div>
+        <div class="headline">${esc(h.kep_focim) || "(nincs megadva kép főcím)"}</div>
+      </div>
+    `;
+  }
+  return `
+    <button class="btn-ghost" onclick="backToList()">← Vissza a listához</button>
+    <div class="card" style="margin-top:14px;padding:20px 24px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+        <div>
+          <div style="font-size:19px;font-weight:700;color:#1C2536;">${esc(h.projektszam)} — ${esc(h.cim)}</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:4px;flex-wrap:wrap;">
+            <span class="badge status-${h.aktiv?'aktív':'inaktív'}"><span class="dot" style="background:currentColor;"></span>${h.aktiv?'aktív':'inaktív'}</span>
+            <span style="font-size:12.5px;color:#8A8570;">${esc(h.partner)} · ${esc(h.varos)}</span>
+            <span class="stat-icon">👥 ${h.jelentkezok} jelentkező</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-ghost" onclick="openJelentkezesekForAd(${h.id})">👥 Jelentkezők</button>
+          <button class="btn-primary" onclick="saveAd()">💾 Mentés</button>
+        </div>
+      </div>
+      <div class="tabs">${AD_TABS.map(([id,label])=>`<button class="tab-btn ${adTab===id?'active':''}" data-tab="${id}">${label}</button>`).join("")}</div>
+      <div style="padding-top:20px;">${body}</div>
+    </div>`;
+}
+
+function onProjektChange(){
+  const kod = document.getElementById("h_projekt").value;
+  const proj = PROJECT_REF.find(p => p.kod === kod);
+  if (!proj) return;
+  document.getElementById("h_partner_display").textContent = proj.nev;
+  document.getElementById("h_iroda_display").textContent = proj.iroda;
+  document.getElementById("h_felelos").value = proj.felelos;
+  const kodSel = document.getElementById("h_kifizetesikod");
+  kodSel.innerHTML = proj.kodok.map(k=>`<option>${k}</option>`).join("");
+}
+function onKifizetesiKodChange(){ /* a bérezés kategóriákat a kifizetési kódból hozza a rendszer — itt csak a választást tároljuk */ }
+function onBerezesChange(){
+  const v = document.getElementById("h_berezes").value;
+  document.getElementById("h_egyeni_wrap").style.display = v === "Egyéni" ? "flex" : "none";
+}
+
+function saveAd(){
+  const h = hirdetesek.find(x => x.id === selectedAdId);
+  if (adTab === "alap") {
+    h.cim = document.getElementById("h_cim").value;
+    h.projektszam = document.getElementById("h_projekt").value;
+    const proj = PROJECT_REF.find(p => p.kod === h.projektszam);
+    h.partner = proj ? proj.nev : h.partner;
+    h.iroda = proj ? proj.iroda : h.iroda;
+    h.felelos = document.getElementById("h_felelos").value;
+    h.toborzo = h.felelos;
+    h.kifizetesi_kod = document.getElementById("h_kifizetesikod").value;
+    h.berezes = document.getElementById("h_berezes").value;
+    h.egyeni_ber = document.getElementById("h_egyeni_ber")?.value || "";
+    h.varos = document.getElementById("h_varos").value;
+    h.extra_varos = document.getElementById("h_extravaros").value;
+    h.extra_varmegye = document.getElementById("h_extravm").value;
+    h.munkanapok = Array.from(document.querySelectorAll(".h-day:checked")).map(c=>c.value);
+    h.szoveges_munkaido = document.getElementById("h_szoveges").checked;
+    h.munkaido_leiras = document.getElementById("h_munkaidoleiras").value;
+    h.cimkek = document.getElementById("h_cimkek").value;
+    h.min_korhatar = document.getElementById("h_minkor").value;
+    h.nyelv = document.getElementById("h_nyelv").value;
+    h.erv_datum = document.getElementById("h_ervdatum").value;
+    h.oneletrajz = document.getElementById("h_oneletrajz").checked;
+    h.telefonszam = document.getElementById("h_telefonszam").checked;
+    h.megjegyzes = document.getElementById("h_megjegyzes").value;
+    h.nem_ertem_el = document.getElementById("h_nemertemel").value;
+  } else if (adTab === "munka") {
+    h.munkavegzes_helye = document.getElementById("h_hely").value;
+    h.munkavegzes_idopontja = document.getElementById("h_idopont").value;
+    h.berezes_szoveg = document.getElementById("h_berszoveg").value;
+    h.befejezo_szoveg = document.getElementById("h_befejezo").value;
+  } else if (adTab === "tartalom") {
+    h.eloszo_fejlec = document.getElementById("h_eloszofejlec").value;
+    h.eloszo_torzs = document.getElementById("h_eloszotorzs").value;
+    h.eloszo_lablec = document.getElementById("h_eloszolablec").value;
+    h.amit_kinalunk = document.getElementById("h_kinalunk").value;
+    h.fobb_feladatok = document.getElementById("h_feladatok").value;
+    h.elvarasok = document.getElementById("h_elvarasok").value;
+    h.elonyt_jelent = document.getElementById("h_elonyt").value;
+  } else if (adTab === "kep") {
+    h.kep_nev = document.getElementById("h_kepnev").value;
+    h.kep_focim = document.getElementById("h_kepfocim").value;
+    h.kep_alcim = document.getElementById("h_kepalcim").value;
+    h.kep_alcim_szin = document.getElementById("h_kepalcimszin").value;
+  }
+  showToast("Hirdetés mentve.");
+  render();
+}
+
+function openNewAdModal(){
+  const id = Math.max(0, ...hirdetesek.map(h=>h.id)) + 1;
+  hirdetesek.unshift({
+    id, aktiv:true, projekt_statusz:true, projektszam: PROJECT_REF[0].kod, partner: PROJECT_REF[0].nev, cim:"Új hirdetés",
+    nyelv:"HU", toborzo: COLLEAGUES[0], varos: VAROSOK[0], megtekintesek:0, jelentkezok:0, elfogadottak:0, letrehozva:"2026.07.05",
+    felelos: COLLEAGUES[0], kifizetesi_kod:"", berezes: BEREZESEK[0], extra_varos:"", extra_varmegye:"",
+    munkanapok:[], szoveges_munkaido:false, munkaido_leiras:"", cimkek:"", min_korhatar:16, oneletrajz:false, telefonszam:true,
+    erv_datum:"2026-08-01", megjegyzes:"", munkavegzes_helye:"", munkavegzes_idopontja:"", berezes_szoveg:"", befejezo_szoveg:"",
+    eloszo_fejlec:"", eloszo_torzs:"", eloszo_lablec:"", amit_kinalunk:"", fobb_feladatok:"", elvarasok:"",
+    kep_nev:"", kep_focim:"", kep_alcim:"", kep_alcim_szin:"#ffffff"
+  });
+  showToast("Új hirdetés létrehozva — töltsd ki az adatait.");
+  openAd(id);
+}
+function extendAd(id){
+  const h = hirdetesek.find(x => x.id === id);
+  h.erv_datum = "+14 nap (" + esc(h.erv_datum) + " → új dátum)";
+  showToast("A hirdetés lejárata 14 nappal meghosszabbítva.");
+  render();
+}
+function toggleAdActive(id){
+  const h = hirdetesek.find(x => x.id === id);
+  h.aktiv = !h.aktiv;
+  showToast(h.aktiv ? "Hirdetés aktiválva." : "Hirdetés inaktiválva.");
+  render();
+}
+function removeAd(id){
+  hirdetesek = hirdetesek.filter(h => h.id !== id);
+  showToast("Hirdetés törölve.");
+  render();
+}
+
+function wireEvents(){
+  document.querySelectorAll(".row[data-id]").forEach(r=>r.addEventListener("click", ()=> openAd(Number(r.dataset.id))));
+  document.querySelectorAll(".tab-btn").forEach(b=>b.addEventListener("click", ()=>{ adTab = b.dataset.tab; render(); }));
+  document.querySelectorAll(".jchk").forEach(c=>c.addEventListener("change", ()=>{
+    const id = Number(c.dataset.id);
+    c.checked ? jelChecked.add(id) : jelChecked.delete(id);
+  }));
+}
+
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SAM — Szövetkezeti tagok</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: 'Segoe UI', Roboto, -apple-system, sans-serif;
+    background: #F6F4EF; color: #232619;
+  }
+  input, select, button { font: inherit; }
+  .app { display: flex; min-height: 100vh; }
+
+  /* sidebar */
+  .sidebar { width: 208px; background: #1C2536; color: #CBD0DA; padding: 20px 14px; flex-shrink: 0; }
+  .brand { display: flex; align-items: center; gap: 8px; padding: 0 8px 22px; border-bottom: 1px solid #2C3750; margin-bottom: 16px; }
+  .brand-mark { width: 26px; height: 26px; border-radius: 7px; background: #E9C989; color: #1C2536; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; }
+  .brand-name { font-weight: 700; font-size: 14px; color: #fff; }
+  .nav-item { display: flex; align-items: center; gap: 9px; padding: 9px 10px; border-radius: 8px; font-size: 13px; font-weight: 600; margin-bottom: 2px; cursor: pointer; color: #9AA1B4; }
+  .nav-item.active { background: #2C3750; color: #fff; }
+
+  /* main */
+  .main { flex: 1; padding: 22px 26px; overflow: auto; }
+  .card { background: #fff; border: 1px solid #E4E0D6; border-radius: 12px; }
+  .btn-ghost { display: inline-flex; align-items: center; gap: 6px; padding: 8px 13px; border-radius: 9px; border: 1px solid #D8D3C4; background: #fff; color: #3A3A2E; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .btn-primary { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 9px; border: 1px solid #1C2536; background: #1C2536; color: #F6F4EF; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .btn-ghost:hover { background: #FAF8F3; }
+  .btn-primary:hover { background: #263049; }
+  .field-input { font-size: 13.5px; padding: 8px 10px; border-radius: 8px; border: 1px solid #D8D3C4; outline: none; background: #fff; color: #232619; }
+  .label { font-size: 11px; font-weight: 600; color: #8A8570; text-transform: uppercase; letter-spacing: .04em; }
+
+  .badge { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+  .dot { width: 6px; height: 6px; border-radius: 999px; }
+  .status-érvényes { background: #EAF3EC; color: #2F7A4E; }
+  .status-érvénytelen { background: #F7EAE7; color: #B4402C; }
+  .status-piszkozat { background: #F1EFE9; color: #7A7460; }
+  .warn-badge { font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 6px; background: #F7EAE7; color: #B4402C; white-space: nowrap; margin: 2px 4px 2px 0; display: inline-block; }
+  .pill-ok { background: #EAF3EC; color: #2F7A4E; }
+  .pill-warn { background: #FBF0DF; color: #B4791F; }
+  .pill-bad { background: #F7EAE7; color: #B4402C; }
+  .pill { align-self: flex-start; font-size: 12.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px; display: inline-block; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th { text-align: left; padding: 10px 12px; font-size: 11.5px; font-weight: 700; color: #8A8570; text-transform: uppercase; letter-spacing: .03em; background: #FAF8F3; border-bottom: 1px solid #E4E0D6; }
+  td { padding: 11px 12px; color: #3A3A2E; border-bottom: 1px solid #EFECE3; }
+  tr.row:hover { background: #FBFAF6; cursor: pointer; }
+
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid #E4E0D6; flex-wrap: wrap; margin-top: 20px; }
+  .tab-btn { display: flex; align-items: center; gap: 6px; padding: 9px 14px; background: none; border: none; cursor: pointer; font-size: 13.5px; font-weight: 600; color: #9A9584; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  .tab-btn.active { color: #1C2536; border-bottom: 2px solid #B8863F; }
+
+  .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 18px 22px; }
+  .overlay { position: fixed; inset: 0; background: rgba(20,20,10,.35); display: none; align-items: center; justify-content: center; z-index: 50; }
+  .overlay.open { display: flex; }
+  .modal { width: 460px; padding: 22px; }
+  .toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); background: #1C2536; color: #F6F4EF; padding: 11px 18px; border-radius: 10px; font-size: 13.5px; font-weight: 600; box-shadow: 0 8px 24px rgba(0,0,0,.18); z-index: 60; display: none; align-items: center; gap: 8px; }
+  .toast.show { display: flex; }
+  .action-menu { position: absolute; top: 40px; right: 92px; background: #fff; border: 1px solid #E4E0D6; border-radius: 10px; box-shadow: 0 10px 28px rgba(20,20,10,.12); width: 240px; z-index: 30; padding: 6px; display: none; }
+  .action-menu.open { display: block; }
+  .action-item { display: flex; align-items: center; gap: 9px; width: 100%; padding: 8px 10px; background: none; border: none; border-radius: 7px; cursor: pointer; font-size: 13px; color: #333; text-align: left; }
+  .action-item:hover { background: #F6F4EF; }
+  .sep { height: 1px; background: #E4E0D6; margin: 6px 4px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="sidebar">
+    <div class="brand"><div class="brand-mark">M</div><div class="brand-name">SAM</div></div>
+    <div class="nav-item active">Szövetkezeti tagok</div>
+    <div class="nav-item">Partnerek</div>
+    <div class="nav-item">Projektek</div>
+    <div class="nav-item">Bérszámfejtés</div>
+  </div>
+  <div class="main" id="main"></div>
+</div>
+
+<div class="overlay" id="newOverlay">
+  <div class="card modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-size:16px;font-weight:700;color:#1C2536;">Új tag felvétele</div>
+      <button onclick="closeNewModal()" style="background:none;border:none;cursor:pointer;color:#9A9584;font-size:18px;">×</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-top:16px;">
+      <label class="label">Név *<br><input class="field-input" id="nf_nev" style="width:100%;margin-top:4px;" /></label>
+      <label class="label">Adószám *<br><input class="field-input" id="nf_ado" style="width:100%;margin-top:4px;" /></label>
+      <label class="label">E-mail *<br><input class="field-input" id="nf_email" style="width:100%;margin-top:4px;" /></label>
+      <label class="label">Telefonszám<br><input class="field-input" id="nf_tel" style="width:100%;margin-top:4px;" /></label>
+      <div style="display:flex;gap:10px;">
+        <label class="label" style="flex:1;">Iroda<br><select class="field-input" id="nf_iroda" style="width:100%;margin-top:4px;"></select></label>
+        <label class="label" style="flex:1;">Iskola<br><select class="field-input" id="nf_iskola" style="width:100%;margin-top:4px;"></select></label>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:20px;">
+      <button class="btn-ghost" onclick="closeNewModal()">Mégse</button>
+      <button class="btn-primary" onclick="createStudent()">+ Tag létrehozása</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const OFFICES = ["Budapest","Debrecen","Szeged","Pécs","Győr"];
+const SCHOOLS = ["BME","ELTE","Corvinus","SZTE","PTE","DE","SZE","Budapesti Gazdasági Egyetem"];
+
+let students = [
+ {id:1,nev:"Kovács Anna",adoszam:"8412345678",taj:"123 456 789",email:"kovacs.anna@melodiak.hu",telefon:"+36 30 111 2233",szuldat:"2002.04.12",lakcim:"1085 Budapest, Üllői út 12.",iroda:"Budapest",iskola:"BME",diakig:"DI-2024-00981",diakig_ervenyes:"2026.10.31",tagsag:"érvényes",belepes:"2023.09.01",kilepes:null,reszjegy:3000,bank:"van",eszerz:"van",eszerz_lejar:"2026.09.30",uzemorv:"van",uzemorv_lejar:"2026.12.01",tudo:"van",tudo_lejar:"2027.01.15",dokumentumok:["Diákigazolvány másolat","Bankszámla igazolás"]},
+ {id:2,nev:"Nagy Bence",adoszam:"8423456789",taj:"234 567 890",email:"nagy.bence@melodiak.hu",telefon:"+36 20 222 3344",szuldat:"2001.11.03",lakcim:"4024 Debrecen, Kossuth u. 3.",iroda:"Debrecen",iskola:"DE",diakig:"DI-2023-00214",diakig_ervenyes:"2026.06.30",tagsag:"érvényes",belepes:"2022.02.15",kilepes:null,reszjegy:3000,bank:"nincs",eszerz:"lejárt",eszerz_lejar:"2026.05.31",uzemorv:"nincs",uzemorv_lejar:null,tudo:"van",tudo_lejar:"2026.11.20",dokumentumok:["Diákigazolvány másolat"]},
+ {id:3,nev:"Tóth Eszter",adoszam:"8434567890",taj:"345 678 901",email:"toth.eszter@melodiak.hu",telefon:"+36 70 333 4455",szuldat:"2003.02.27",lakcim:"6720 Szeged, Dugonics tér 2.",iroda:"Szeged",iskola:"SZTE",diakig:"DI-2025-01122",diakig_ervenyes:"2027.03.31",tagsag:"érvényes",belepes:"2024.01.10",kilepes:null,reszjegy:3000,bank:"van",eszerz:"van",eszerz_lejar:"2026.08.15",uzemorv:"van",uzemorv_lejar:"2026.07.05",tudo:"nincs",tudo_lejar:null,dokumentumok:[]},
+ {id:4,nev:"Szabó Márk",adoszam:"8445678901",taj:"456 789 012",email:"szabo.mark@melodiak.hu",telefon:"+36 30 444 5566",szuldat:"2000.08.19",lakcim:"7622 Pécs, Rákóczi út 5.",iroda:"Pécs",iskola:"PTE",diakig:"DI-2022-00089",diakig_ervenyes:"2026.02.28",tagsag:"érvénytelen",belepes:"2021.09.01",kilepes:"2026.03.01",reszjegy:3000,bank:"van",eszerz:"van",eszerz_lejar:"2025.12.31",uzemorv:"van",uzemorv_lejar:"2025.10.10",tudo:"van",tudo_lejar:"2025.09.09",dokumentumok:["Kilépési nyilatkozat"]},
+ {id:5,nev:"Kiss Zoé",adoszam:"8456789012",taj:"567 890 123",email:"kiss.zoe@melodiak.hu",telefon:"+36 20 555 6677",szuldat:"2004.01.05",lakcim:"9022 Győr, Bécsi kapu tér 1.",iroda:"Győr",iskola:"SZE",diakig:"DI-2025-01887",diakig_ervenyes:"2027.09.30",tagsag:"érvényes",belepes:"2025.02.01",kilepes:null,reszjegy:3000,bank:"van",eszerz:"van",eszerz_lejar:"2026.10.01",uzemorv:"van",uzemorv_lejar:"2026.09.01",tudo:"van",tudo_lejar:"2026.09.01",dokumentumok:["Diákigazolvány másolat","Bankszámla igazolás","Eseti szerződés"]},
+ {id:6,nev:"Horváth Dávid",adoszam:"8467890123",taj:"678 901 234",email:"horvath.david@melodiak.hu",telefon:"+36 30 666 7788",szuldat:"2002.06.30",lakcim:"1112 Budapest, Kelenföldi u. 8.",iroda:"Budapest",iskola:"Corvinus",diakig:"DI-2024-00567",diakig_ervenyes:"2026.08.31",tagsag:"érvényes",belepes:"2023.11.20",kilepes:null,reszjegy:3000,bank:"nincs",eszerz:"nincs",eszerz_lejar:null,uzemorv:"nincs",uzemorv_lejar:null,tudo:"nincs",tudo_lejar:null,dokumentumok:[]},
+ {id:7,nev:"Varga Léna",adoszam:"8478901234",taj:"789 012 345",email:"varga.lena@melodiak.hu",telefon:"+36 70 777 8899",szuldat:"2001.12.14",lakcim:"1073 Budapest, Erzsébet krt. 20.",iroda:"Budapest",iskola:"ELTE",diakig:"DI-2023-00341",diakig_ervenyes:"2026.06.30",tagsag:"piszkozat",belepes:null,kilepes:null,reszjegy:0,bank:"nincs",eszerz:"nincs",eszerz_lejar:null,uzemorv:"nincs",uzemorv_lejar:null,tudo:"nincs",tudo_lejar:null,dokumentumok:[]},
+ {id:8,nev:"Molnár Petra",adoszam:"8489012345",taj:"890 123 456",email:"molnar.petra@melodiak.hu",telefon:"+36 20 888 9900",szuldat:"2003.09.09",lakcim:"6722 Szeged, Tisza L. krt. 44.",iroda:"Szeged",iskola:"SZTE",diakig:"DI-2025-01455",diakig_ervenyes:"2027.05.31",tagsag:"érvényes",belepes:"2024.09.01",kilepes:null,reszjegy:3000,bank:"van",eszerz:"van",eszerz_lejar:"2026.09.20",uzemorv:"lejárt",uzemorv_lejar:"2026.05.01",tudo:"van",tudo_lejar:"2026.12.31",dokumentumok:["Diákigazolvány másolat"]}
+];
+
+let checked = new Set();
+let selectedId = null;
+let currentTab = "alap";
+let editing = false;
+let draft = null;
+let actionsOpen = false;
+
+function esc(s){ return (s===null||s===undefined) ? "" : String(s); }
+
+function warningsFor(s){
+  const items = [];
+  if (s.bank === "nincs") items.push("nincs bankszámla");
+  if (s.eszerz === "nincs") items.push("nincs eseti szerz.");
+  if (s.eszerz === "lejárt") items.push("lejárt eseti szerz.");
+  if (s.uzemorv === "nincs") items.push("nincs orvosi");
+  if (s.uzemorv === "lejárt") items.push("lejárt orvosi");
+  if (s.tudo === "nincs") items.push("nincs tüdőszűrő");
+  return items;
+}
+function pillClass(v){ return v === "van" ? "pill-ok" : v === "lejárt" ? "pill-warn" : "pill-bad"; }
+function pillLabel(v){ return v === "van" ? "megvan" : v; }
+
+function showToast(text){
+  const t = document.getElementById("toast");
+  t.innerHTML = "✓ " + text;
+  t.classList.add("show");
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => t.classList.remove("show"), 2600);
+}
+
+function render(){
+  const main = document.getElementById("main");
+  main.innerHTML = selectedId ? renderProfile() : renderList();
+  wireEvents();
+}
+
+function renderList(){
+  const search = (document.getElementById("_q")?.value || "").toLowerCase();
+  const statusF = document.getElementById("_status")?.value || "mind";
+  const officeF = document.getElementById("_office")?.value || "mind";
+
+  const filtered = students.filter(s=>{
+    if (statusF !== "mind" && s.tagsag !== statusF) return false;
+    if (officeF !== "mind" && s.iroda !== officeF) return false;
+    if (search && !s.nev.toLowerCase().includes(search) && !s.adoszam.includes(search) && !s.email.toLowerCase().includes(search)) return false;
+    return true;
+  });
+
+  const rows = filtered.map(s => {
+    const w = warningsFor(s);
+    return `<tr class="row" data-id="${s.id}">
+      <td onclick="event.stopPropagation()"><input type="checkbox" class="chk" data-id="${s.id}" ${checked.has(s.id)?"checked":""}></td>
+      <td style="font-weight:600;color:#1C2536;">${esc(s.nev)}</td>
+      <td>${esc(s.adoszam)}</td>
+      <td>${esc(s.iroda)}</td>
+      <td>${esc(s.iskola)}</td>
+      <td><span class="badge status-${s.tagsag}"><span class="dot" style="background:currentColor;"></span>${s.tagsag}</span></td>
+      <td>${w.length ? w.map(x=>`<span class="warn-badge">${x}</span>`).join("") : '<span style="color:#9A9584;font-size:12px;">—</span>'}</td>
+      <td style="color:#B0AB98;">›</td>
+    </tr>`;
+  }).join("");
+
+  return `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">
+      <div>
+        <div style="font-size:20px;font-weight:700;color:#1C2536;">Szövetkezeti tagok</div>
+        <div style="font-size:13px;color:#8A8570;margin-top:2px;">${filtered.length} tag a szűrésnek megfelelően · ${students.length} összesen</div>
+      </div>
+      <div style="display:flex;gap:8px;position:relative;">
+        <button class="btn-ghost" id="actionsBtn">Műveletek ▾</button>
+        <div class="action-menu ${actionsOpen ? 'open' : ''}" id="actionsMenu">
+          <button class="action-item" onclick="bulkSync()">↻ Tömeges szinkronizálás</button>
+          <button class="action-item" onclick="bulkClose()">⊘ Tömeges lezárás</button>
+          <button class="action-item" onclick="bulkExit()">↪ Tömeges kiléptetés</button>
+          <div class="sep"></div>
+          <button class="action-item" onclick="exportAction('Tag adat export')">⬇ Tag adat export</button>
+          <button class="action-item" onclick="exportAction('Módosítás napló export')">⬇ Módosítás napló export</button>
+          <button class="action-item" onclick="exportAction('Tagdíj befizetési lista')">⬇ Tagdíj befizetési lista</button>
+        </div>
+        <button class="btn-primary" onclick="openNewModal()">+ Új tag</button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:18px;padding:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+      <input class="field-input" id="_q" placeholder="Keresés név, adószám vagy e-mail alapján…" style="flex:1 1 220px;">
+      <select class="field-input" id="_status">
+        <option value="mind">Minden tagság státusz</option>
+        <option value="érvényes">érvényes</option>
+        <option value="érvénytelen">érvénytelen</option>
+        <option value="piszkozat">piszkozat</option>
+      </select>
+      <select class="field-input" id="_office">
+        <option value="mind">Minden iroda</option>
+        ${OFFICES.map(o=>`<option value="${o}">${o}</option>`).join("")}
+      </select>
+      <button class="btn-ghost">⚙ Részletes kereső</button>
+    </div>
+
+    <div class="card" style="margin-top:14px;overflow:hidden;">
+      <table>
+        <thead><tr>
+          <th style="width:34px;"><input type="checkbox" id="_all"></th>
+          <th>Név</th><th>Adószám</th><th>Iroda</th><th>Iskola</th>
+          <th>Tagság státusz</th><th>Figyelmeztetések</th><th></th>
+        </tr></thead>
+        <tbody>${rows || `<tr><td colspan="8" style="text-align:center;color:#9A9584;padding:28px;">Nincs a szűrésnek megfelelő tag.</td></tr>`}</tbody>
+      </table>
+    </div>`;
+}
+
+const TABS = [["alap","Alapadatok"],["tagsag","Tagsági adatok"],["tanulmany","Tanulmányi adatok"],["munka","Munkavégzési adatok"],["dokumentum","Dokumentumok"]];
+
+function renderProfile(){
+  const s = students.find(x => x.id === selectedId);
+  if (!draft || draft.id !== s.id) draft = {...s};
+  const d = editing ? draft : s;
+
+  const tabsHtml = TABS.map(([id,label]) =>
+    `<button class="tab-btn ${currentTab===id?'active':''}" data-tab="${id}">${label}</button>`
+  ).join("");
+
+  let body = "";
+  if (currentTab === "alap") {
+    body = `<div class="grid3">
+      ${fieldHtml("Név","nev",d.nev)}
+      ${fieldHtml("Adószám","adoszam",d.adoszam)}
+      ${fieldHtml("TAJ szám","taj",d.taj)}
+      ${fieldHtml("Születési dátum","szuldat",d.szuldat)}
+      ${fieldHtml("E-mail","email",d.email)}
+      ${fieldHtml("Telefonszám","telefon",d.telefon)}
+      ${fieldHtml("Lakcím","lakcim",d.lakcim)}
+    </div>`;
+  } else if (currentTab === "tagsag") {
+    body = `<div class="grid3">
+      <div><div class="label">Tagság státusz</div><span class="badge status-${d.tagsag}" style="margin-top:4px;"><span class="dot" style="background:currentColor;"></span>${d.tagsag}</span></div>
+      ${fieldHtml("Iroda","iroda",d.iroda)}
+      ${fieldHtml("Belépés dátuma","belepes",d.belepes)}
+      ${fieldHtml("Kilépés dátuma","kilepes",d.kilepes)}
+      <div><div class="label">Részjegy összeg</div><div style="font-size:14.5px;font-weight:500;margin-top:4px;">${d.reszjegy ? d.reszjegy.toLocaleString("hu-HU")+" Ft" : "—"}</div></div>
+    </div>`;
+  } else if (currentTab === "tanulmany") {
+    body = `<div class="grid3">
+      ${fieldHtml("Iskola","iskola",d.iskola)}
+      ${fieldHtml("Diákigazolvány szám","diakig",d.diakig)}
+      ${fieldHtml("Érvényesség","diakig_ervenyes",d.diakig_ervenyes)}
+    </div>`;
+  } else if (currentTab === "munka") {
+    body = `<div class="grid3">
+      <div><div class="label">Bankszámla</div><span class="pill ${pillClass(d.bank)}" style="margin-top:4px;">${pillLabel(d.bank)}</span></div>
+      <div><div class="label">Eseti szerződés</div><span class="pill ${pillClass(d.eszerz)}" style="margin-top:4px;">${pillLabel(d.eszerz)}</span></div>
+      ${fieldHtml("Eseti szerződés lejárata","eszerz_lejar",d.eszerz_lejar)}
+      <div><div class="label">Üzemorvosi</div><span class="pill ${pillClass(d.uzemorv)}" style="margin-top:4px;">${pillLabel(d.uzemorv)}</span></div>
+      ${fieldHtml("Üzemorvosi lejárata","uzemorv_lejar",d.uzemorv_lejar)}
+      <div><div class="label">Tüdőszűrő</div><span class="pill ${pillClass(d.tudo)}" style="margin-top:4px;">${pillLabel(d.tudo)}</span></div>
+      ${fieldHtml("Tüdőszűrő lejárata","tudo_lejar",d.tudo_lejar)}
+    </div>`;
+  } else if (currentTab === "dokumentum") {
+    body = d.dokumentumok.length === 0
+      ? `<div style="color:#9A9584;font-size:13.5px;">Nincs feltöltött dokumentum.</div>`
+      : `<div style="display:flex;flex-direction:column;gap:8px;">${d.dokumentumok.map(x=>`<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid #E4E0D6;border-radius:8px;font-size:13.5px;">📄 ${x}</div>`).join("")}</div>
+      <button class="btn-ghost" style="margin-top:14px;">+ Dokumentum feltöltése</button>`;
+  }
+
+  return `
+    <button class="btn-ghost" onclick="backToList()">← Vissza a listához</button>
+    <div class="card" style="margin-top:14px;padding:20px 24px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div style="width:46px;height:46px;border-radius:12px;background:#1C2536;color:#E9C989;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:17px;">${s.nev.split(" ").map(n=>n[0]).join("").slice(0,2)}</div>
+          <div>
+            <div style="font-size:19px;font-weight:700;color:#1C2536;">${s.nev}</div>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:4px;">
+              <span class="badge status-${s.tagsag}"><span class="dot" style="background:currentColor;"></span>${s.tagsag}</span>
+              <span style="font-size:12.5px;color:#8A8570;">${s.iroda} · ${s.iskola}</span>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          ${editing
+            ? `<button class="btn-ghost" onclick="cancelEdit()">Mégse</button><button class="btn-primary" onclick="saveEdit()">💾 Mentés</button>`
+            : `<button class="btn-ghost" onclick="startEdit()">✎ Szerkesztés</button>`}
+        </div>
+      </div>
+      <div class="tabs">${tabsHtml}</div>
+      <div style="padding-top:20px;">${body}</div>
+    </div>`;
+}
+
+function fieldHtml(label, key, value){
+  if (editing) {
+    return `<div><div class="label">${label}</div><input class="field-input" style="width:100%;margin-top:4px;" data-field="${key}" value="${esc(value)}"></div>`;
+  }
+  return `<div><div class="label">${label}</div><div style="font-size:14.5px;color:#232619;font-weight:500;margin-top:4px;">${esc(value) || "—"}</div></div>`;
+}
+
+function wireEvents(){
+  document.getElementById("_q")?.addEventListener("input", render);
+  document.getElementById("_status")?.addEventListener("change", render);
+  document.getElementById("_office")?.addEventListener("change", render);
+  document.getElementById("_all")?.addEventListener("change", (e)=>{
+    const ids = Array.from(document.querySelectorAll(".chk")).map(c=>Number(c.dataset.id));
+    if (e.target.checked) ids.forEach(id=>checked.add(id)); else ids.forEach(id=>checked.delete(id));
+    render();
+  });
+  document.querySelectorAll(".chk").forEach(c=>c.addEventListener("change", ()=>{
+    const id = Number(c.dataset.id);
+    c.checked ? checked.add(id) : checked.delete(id);
+  }));
+  document.querySelectorAll(".row").forEach(r=>r.addEventListener("click", ()=>{
+    selectedId = Number(r.dataset.id); currentTab = "alap"; editing = false; draft = null; render();
+  }));
+  document.getElementById("actionsBtn")?.addEventListener("click", ()=>{ actionsOpen = !actionsOpen; render(); });
+  document.querySelectorAll(".tab-btn").forEach(b=>b.addEventListener("click", ()=>{ currentTab = b.dataset.tab; render(); }));
+
+  document.querySelectorAll("[data-field]").forEach(inp=>inp.addEventListener("input", ()=>{
+    draft[inp.dataset.field] = inp.value;
+  }));
+}
+
+function backToList(){ selectedId = null; editing = false; draft = null; render(); }
+function startEdit(){ editing = true; draft = {...students.find(x=>x.id===selectedId)}; render(); }
+function cancelEdit(){ editing = false; draft = null; render(); }
+function saveEdit(){
+  students = students.map(s => s.id === draft.id ? {...draft} : s);
+  editing = false; draft = null;
+  showToast("A profil módosításai mentve.");
+  render();
+}
+
+function bulkAction(label, apply){
+  if (checked.size === 0) { showToast("Előbb jelölj ki legalább egy tagot."); actionsOpen = false; render(); return; }
+  students = students.map(s => checked.has(s.id) ? apply(s) : s);
+  showToast(`${label} — ${checked.size} tag frissítve.`);
+  checked.clear(); actionsOpen = false; render();
+}
+function bulkSync(){ bulkAction("Tömeges szinkronizálás", s=>s); }
+function bulkClose(){ bulkAction("Tömeges lezárás", s=>({...s, tagsag:"érvénytelen"})); }
+function bulkExit(){ bulkAction("Tömeges kiléptetés", s=>({...s, tagsag:"érvénytelen", kilepes:"2026.07.01"})); }
+function exportAction(label){ showToast(`${label} elindítva (.xlsx).`); actionsOpen = false; render(); }
+
+function openNewModal(){
+  document.getElementById("nf_iroda").innerHTML = OFFICES.map(o=>`<option>${o}</option>`).join("");
+  document.getElementById("nf_iskola").innerHTML = SCHOOLS.map(o=>`<option>${o}</option>`).join("");
+  ["nf_nev","nf_ado","nf_email","nf_tel"].forEach(id=>document.getElementById(id).value="");
+  document.getElementById("newOverlay").classList.add("open");
+}
+function closeNewModal(){ document.getElementById("newOverlay").classList.remove("open"); }
+function createStudent(){
+  const nev = document.getElementById("nf_nev").value.trim();
+  const adoszam = document.getElementById("nf_ado").value.trim();
+  const email = document.getElementById("nf_email").value.trim();
+  if (!nev || !adoszam || !email) { showToast("Töltsd ki a kötelező mezőket (Név, Adószám, E-mail)."); return; }
+  const id = Math.max(...students.map(s=>s.id)) + 1;
+  students.unshift({
+    id, nev, adoszam, taj:"", email, telefon: document.getElementById("nf_tel").value,
+    szuldat:"", lakcim:"", iroda: document.getElementById("nf_iroda").value, iskola: document.getElementById("nf_iskola").value,
+    diakig:"", diakig_ervenyes:"", tagsag:"piszkozat", belepes:null, kilepes:null, reszjegy:0,
+    bank:"nincs", eszerz:"nincs", eszerz_lejar:null, uzemorv:"nincs", uzemorv_lejar:null, tudo:"nincs", tudo_lejar:null, dokumentumok:[]
+  });
+  closeNewModal();
+  showToast(`${nev} felvéve piszkozat státusszal.`);
+  render();
+}
+
+render();
+</script>
+</body>
+</html>

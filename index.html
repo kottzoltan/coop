@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Coop — ügyviteli rendszer</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: 'Segoe UI', Inter, system-ui, sans-serif; background: #F6F4EF; color: #232619; }
+    .app { display: flex; min-height: 100vh; }
+    .sidebar { width: 208px; background: #1C2536; color: #CBD0DA; padding: 20px 14px; flex-shrink: 0; }
+    .brand { display: flex; align-items: center; gap: 8px; padding: 0 8px 22px; border-bottom: 1px solid #2C3750; margin-bottom: 16px; }
+    .brand-mark { width: 26px; height: 26px; border-radius: 7px; background: #E9C989; color: #1C2536; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; }
+    .brand-name { font-weight: 700; font-size: 14px; color: #fff; }
+    .nav-group-label { font-size: 11px; font-weight: 700; color: #6E7690; text-transform: uppercase; letter-spacing: .05em; padding: 10px 10px 4px; }
+    .subnav-item, .nav-item {
+      display: flex; align-items: center; gap: 9px; padding: 9px 10px; border-radius: 8px;
+      font-size: 13px; font-weight: 600; margin-bottom: 2px; cursor: pointer; color: #9AA1B4;
+      border: none; background: none; width: 100%; text-align: left;
+    }
+    .subnav-item { padding: 7px 10px 7px 26px; font-size: 12.5px; border-radius: 7px; }
+    .nav-item.active, .subnav-item.active { background: #2C3750; color: #fff; }
+    .nav-item:hover, .subnav-item:hover { background: rgba(44,55,80,.6); color: #fff; }
+    .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar"></aside>
+    <main class="main">
+      <iframe id="frame" title="Coop modul" style="width:100%;height:100vh;border:0;background:#F6F4EF;"></iframe>
+    </main>
+  </div>
+  <script>
+    const routes = {
+      '/tagok': { src: 'mocks/ice_tagok_mock.html', title: 'Szövetkezeti tagok' },
+      '/partnerek': { src: 'mocks/ice_partnerek_mock.html', title: 'Partnerek' },
+      '/projektek': { src: 'mocks/ice_projektek_mock.html', title: 'Projektek' },
+      '/toborzas/hirdetesek': { src: 'mocks/ice_toborzas_mock.html', title: 'Hirdetések', init: 'hirdetesek' },
+      '/toborzas/jelentkezesek': { src: 'mocks/ice_toborzas_mock.html', title: 'Jelentkezések', init: 'jelentkezesek' },
+      '/berszamfejtes': { src: 'mocks/ice_berszamfejtes_mock.html', title: 'Bérszámfejtés' },
+    };
+
+    const nav = [
+      { type: 'label', text: 'Toborzás' },
+      { type: 'sub', to: '/toborzas/hirdetesek', label: 'Hirdetések' },
+      { type: 'sub', to: '/toborzas/jelentkezesek', label: 'Jelentkezések' },
+      { type: 'main', to: '/tagok', label: 'Szövetkezeti tagok' },
+      { type: 'main', to: '/partnerek', label: 'Partnerek' },
+      { type: 'main', to: '/projektek', label: 'Projektek' },
+      { type: 'main', to: '/berszamfejtes', label: 'Bérszámfejtés' },
+    ];
+
+    function currentPath() {
+      const hash = location.hash.replace(/^#/, '') || '/tagok';
+      return routes[hash] ? hash : '/tagok';
+    }
+
+    function renderSidebar() {
+      const path = currentPath();
+      const sb = document.getElementById('sidebar');
+      sb.innerHTML = `
+        <div class="brand"><div class="brand-mark">C</div><div class="brand-name">Coop</div></div>
+        <nav>${nav.map(item => {
+          if (item.type === 'label') return `<div class="nav-group-label">${item.text}</div>`;
+          const cls = item.type === 'sub' ? 'subnav-item' : 'nav-item';
+          const active = path === item.to ? ' active' : '';
+          return `<button class="${cls}${active}" data-to="${item.to}">${item.label}</button>`;
+        }).join('')}</nav>
+      `;
+      sb.querySelectorAll('[data-to]').forEach(btn => {
+        btn.addEventListener('click', () => navigate(btn.dataset.to));
+      });
+    }
+
+    function embedMock(route) {
+      const frame = document.getElementById('frame');
+      frame.src = route.src;
+      frame.title = route.title;
+      frame.onload = () => {
+        const doc = frame.contentDocument;
+        if (!doc) return;
+        if (!doc.getElementById('ice-embed-style')) {
+          const style = doc.createElement('style');
+          style.id = 'ice-embed-style';
+          style.textContent = `
+            .sidebar { display: none !important; }
+            .app { display: block !important; min-height: 100vh; }
+            .main { padding: 22px 26px !important; }
+            body { background: #F6F4EF; }
+          `;
+          doc.head.appendChild(style);
+        }
+        if (route.init && frame.contentWindow?.setView) {
+          frame.contentWindow.setView(route.init);
+        }
+      };
+    }
+
+    function navigate(to) {
+      location.hash = to;
+      renderSidebar();
+      embedMock(routes[to]);
+    }
+
+    window.addEventListener('hashchange', () => {
+      renderSidebar();
+      embedMock(routes[currentPath()]);
+    });
+
+    if (!location.hash) location.hash = '/tagok';
+    renderSidebar();
+    embedMock(routes[currentPath()]);
+  </script>
+</body>
+</html>

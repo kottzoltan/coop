@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ICE — Partnerek</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: 'Segoe UI', Roboto, -apple-system, sans-serif;
+    background: #F6F4EF; color: #232619;
+  }
+  input, select, button { font: inherit; }
+  .app { display: flex; min-height: 100vh; }
+
+  .sidebar { width: 208px; background: #1C2536; color: #CBD0DA; padding: 20px 14px; flex-shrink: 0; }
+  .brand { display: flex; align-items: center; gap: 8px; padding: 0 8px 22px; border-bottom: 1px solid #2C3750; margin-bottom: 16px; }
+  .brand-mark { width: 26px; height: 26px; border-radius: 7px; background: #E9C989; color: #1C2536; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; }
+  .brand-name { font-weight: 700; font-size: 14px; color: #fff; }
+  .nav-item { display: flex; align-items: center; gap: 9px; padding: 9px 10px; border-radius: 8px; font-size: 13px; font-weight: 600; margin-bottom: 2px; cursor: pointer; color: #9AA1B4; }
+  .nav-item.active { background: #2C3750; color: #fff; }
+
+  .main { flex: 1; padding: 22px 26px; overflow: auto; }
+  .card { background: #fff; border: 1px solid #E4E0D6; border-radius: 12px; }
+  .btn-ghost { display: inline-flex; align-items: center; gap: 6px; padding: 8px 13px; border-radius: 9px; border: 1px solid #D8D3C4; background: #fff; color: #3A3A2E; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .btn-primary { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 9px; border: 1px solid #1C2536; background: #1C2536; color: #F6F4EF; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .btn-ghost:hover { background: #FAF8F3; }
+  .btn-primary:hover { background: #263049; }
+  .btn-ghost.sm, .btn-primary.sm { padding: 5px 10px; font-size: 12px; border-radius: 7px; }
+  .field-input { font-size: 13.5px; padding: 8px 10px; border-radius: 8px; border: 1px solid #D8D3C4; outline: none; background: #fff; color: #232619; }
+  .label { font-size: 11px; font-weight: 600; color: #8A8570; text-transform: uppercase; letter-spacing: .04em; }
+
+  .badge { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+  .dot { width: 6px; height: 6px; border-radius: 999px; }
+  .status-aktív, .status-aláírt { background: #EAF3EC; color: #2F7A4E; }
+  .status-inaktív, .status-lejárt { background: #F7EAE7; color: #B4402C; }
+  .status-piszkozat { background: #F1EFE9; color: #7A7460; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th { text-align: left; padding: 10px 12px; font-size: 11.5px; font-weight: 700; color: #8A8570; text-transform: uppercase; letter-spacing: .03em; background: #FAF8F3; border-bottom: 1px solid #E4E0D6; }
+  td { padding: 11px 12px; color: #3A3A2E; border-bottom: 1px solid #EFECE3; }
+  tr.row:hover { background: #FBFAF6; cursor: pointer; }
+
+  .segment { display: inline-flex; background: #F1EFE9; border-radius: 9px; padding: 3px; gap: 2px; }
+  .segment button { border: none; background: none; padding: 7px 16px; border-radius: 7px; font-size: 13px; font-weight: 600; color: #8A8570; cursor: pointer; }
+  .segment button.active { background: #fff; color: #1C2536; box-shadow: 0 1px 2px rgba(0,0,0,.06); }
+
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid #E4E0D6; flex-wrap: wrap; margin-top: 20px; }
+  .tab-btn { display: flex; align-items: center; gap: 6px; padding: 9px 14px; background: none; border: none; cursor: pointer; font-size: 13.5px; font-weight: 600; color: #9A9584; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  .tab-btn.active { color: #1C2536; border-bottom: 2px solid #B8863F; }
+
+  .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 18px 22px; }
+  .overlay { position: fixed; inset: 0; background: rgba(20,20,10,.35); display: none; align-items: center; justify-content: center; z-index: 50; }
+  .overlay.open { display: flex; }
+  .modal { width: 460px; padding: 22px; }
+  .toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); background: #1C2536; color: #F6F4EF; padding: 11px 18px; border-radius: 10px; font-size: 13.5px; font-weight: 600; box-shadow: 0 8px 24px rgba(0,0,0,.18); z-index: 60; display: none; align-items: center; gap: 8px; }
+  .toast.show { display: flex; }
+  .action-menu { position: absolute; top: 40px; right: 0; background: #fff; border: 1px solid #E4E0D6; border-radius: 10px; box-shadow: 0 10px 28px rgba(20,20,10,.12); width: 220px; z-index: 30; padding: 6px; display: none; }
+  .action-menu.open { display: block; }
+  .action-item { display: flex; align-items: center; gap: 9px; width: 100%; padding: 8px 10px; background: none; border: none; border-radius: 7px; cursor: pointer; font-size: 13px; color: #333; text-align: left; }
+  .action-item:hover { background: #F6F4EF; }
+  .icon-btn { border: none; background: none; cursor: pointer; color: #8A8570; padding: 4px 6px; border-radius: 6px; font-size: 14px; }
+  .icon-btn:hover { background: #F1EFE9; color: #1C2536; }
+  .dropzone {
+    border: 2px dashed #D8D3C4; border-radius: 10px; padding: 26px 16px; text-align: center;
+    color: #8A8570; font-size: 13px; background: #FAF8F3; cursor: pointer; transition: border-color .15s;
+  }
+  .dropzone.drag { border-color: #B8863F; background: #FBF3E4; color: #B8863F; }
+  .contact-card { border: 1px solid #E4E0D6; border-radius: 10px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; }
+
+  .crm-board { display: flex; gap: 12px; margin-top: 16px; overflow-x: auto; padding-bottom: 8px; }
+  .crm-col { flex: 0 0 220px; background: #FAF8F3; border: 1px solid #E4E0D6; border-radius: 10px; overflow: hidden; }
+  .crm-col-head { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; font-size: 12px; font-weight: 700; color: #3A3A2E; background: #fff; }
+  .crm-count { background: #F1EFE9; color: #8A8570; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; }
+  .crm-col-body { padding: 10px; display: flex; flex-direction: column; gap: 10px; min-height: 70px; transition: background .12s; }
+  .crm-col-body.drag-over { background: #FBF3E4; outline: 2px dashed #B8863F; outline-offset: -6px; border-radius: 6px; }
+  .crm-card { background: #fff; border: 1px solid #E4E0D6; border-radius: 8px; padding: 10px 11px; cursor: grab; }
+  .crm-card:hover { box-shadow: 0 2px 8px rgba(20,20,10,.08); }
+  .crm-card.dragging { opacity: .4; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="sidebar">
+    <div class="brand"><div class="brand-mark">I</div><div class="brand-name">ICE</div></div>
+    <div class="nav-item">Szövetkezeti tagok</div>
+    <div class="nav-item active">Partnerek</div>
+    <div class="nav-item">Projektek</div>
+    <div class="nav-item">Bérszámfejtés</div>
+  </div>
+  <div class="main" id="main"></div>
+</div>
+
+<!-- Új partner -->
+<div class="overlay" id="newPartnerOverlay">
+  <div class="card modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-size:16px;font-weight:700;color:#1C2536;">Új partner felvétele</div>
+      <button onclick="closeModal('newPartnerOverlay')" style="background:none;border:none;cursor:pointer;color:#9A9584;font-size:18px;">×</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-top:16px;">
+      <label class="label">Cégnév *<br><input class="field-input" id="np_nev" style="width:100%;margin-top:4px;"></label>
+      <label class="label">Adószám *<br><input class="field-input" id="np_ado" style="width:100%;margin-top:4px;"></label>
+      <label class="label">Cím<br><input class="field-input" id="np_cim" style="width:100%;margin-top:4px;"></label>
+      <label class="label">Iroda<br><select class="field-input" id="np_iroda" style="width:100%;margin-top:4px;"></select></label>
+      <div style="border-top:1px solid #E4E0D6;padding-top:12px;margin-top:2px;">
+        <div class="label" style="margin-bottom:8px;">Elsődleges kapcsolattartó (később további is felvehető)</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <input class="field-input" id="np_kt_nev" placeholder="Név">
+          <input class="field-input" id="np_kt_email" placeholder="E-mail">
+          <input class="field-input" id="np_kt_tel" placeholder="Telefonszám">
+          <select class="field-input" id="np_kt_hozzaferes">
+            <option value="nincs">Partnerfelület: nincs hozzáférés</option>
+            <option value="olvasas">Partnerfelület: olvasási jog</option>
+            <option value="iras">Partnerfelület: írási jog</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:20px;">
+      <button class="btn-ghost" onclick="closeModal('newPartnerOverlay')">Mégse</button>
+      <button class="btn-primary" onclick="createPartner()">Partner létrehozása</button>
+    </div>
+  </div>
+</div>
+
+<!-- Új szerződés -->
+<div class="overlay" id="newContractOverlay">
+  <div class="card modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-size:16px;font-weight:700;color:#1C2536;">Új szerződés</div>
+      <button onclick="closeModal('newContractOverlay')" style="background:none;border:none;cursor:pointer;color:#9A9584;font-size:18px;">×</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-top:16px;">
+      <label class="label">Partner<br><div id="nc_partner_display" style="font-size:14px;font-weight:600;color:#1C2536;margin-top:4px;"></div></label>
+      <label class="label">Típus<br>
+        <select class="field-input" id="nc_tipus" style="width:100%;margin-top:4px;">
+          <option>Keretszerződés</option>
+          <option>Eseti szerződés</option>
+        </select>
+      </label>
+      <div style="display:flex;gap:10px;">
+        <label class="label" style="flex:1;">Kezdete<br><input class="field-input" id="nc_kezdete" type="text" placeholder="ÉÉÉÉ.HH.NN" style="width:100%;margin-top:4px;"></label>
+        <label class="label" style="flex:1;">Vége<br><input class="field-input" id="nc_vege" type="text" placeholder="ÉÉÉÉ.HH.NN (opcionális)" style="width:100%;margin-top:4px;"></label>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:20px;">
+      <button class="btn-ghost" onclick="closeModal('newContractOverlay')">Mégse</button>
+      <button class="btn-primary" onclick="createContract()">Szerződés létrehozása</button>
+    </div>
+  </div>
+</div>
+
+<!-- Új kapcsolattartó -->
+<div class="overlay" id="newContactOverlay">
+  <div class="card modal" style="width:380px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-size:16px;font-weight:700;color:#1C2536;">Új kapcsolattartó</div>
+      <button onclick="closeModal('newContactOverlay')" style="background:none;border:none;cursor:pointer;color:#9A9584;font-size:18px;">×</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-top:16px;">
+      <input class="field-input" id="nk_nev" placeholder="Név *">
+      <input class="field-input" id="nk_email" placeholder="E-mail *">
+      <input class="field-input" id="nk_tel" placeholder="Mobil szám">
+      <input class="field-input" id="nk_vezetekes" placeholder="Vezetékes szám (opcionális)">
+      <input class="field-input" id="nk_beosztas" placeholder="Beosztás (opcionális)">
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#3A3A2E;padding:2px 0;">
+        <input type="checkbox" id="nk_szamlazasi"> Számlázási kapcsolattartó
+      </label>
+      <label class="label">Partnerfelület hozzáférés
+        <select class="field-input" id="nk_hozzaferes" style="width:100%;margin-top:4px;">
+          <option value="nincs">Nincs hozzáférés</option>
+          <option value="olvasas">Olvasási jog</option>
+          <option value="iras">Írási jog</option>
+        </select>
+      </label>
+      <label class="label">Megjegyzés
+        <textarea class="field-input" id="nk_megjegyzes" rows="2" style="width:100%;margin-top:4px;resize:vertical;"></textarea>
+      </label>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:18px;">
+      <button class="btn-ghost" onclick="closeModal('newContactOverlay')">Mégse</button>
+      <button class="btn-primary" onclick="createContact()">Hozzáadás</button>
+    </div>
+  </div>
+</div>
+
+<!-- Szerződés dokumentum feltöltés -->
+<div class="overlay" id="uploadOverlay">
+  <div class="card modal" style="width:420px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-size:16px;font-weight:700;color:#1C2536;">Dokumentum feltöltése</div>
+      <button onclick="closeModal('uploadOverlay')" style="background:none;border:none;cursor:pointer;color:#9A9584;font-size:18px;">×</button>
+    </div>
+    <div style="font-size:12.5px;color:#8A8570;margin-top:4px;" id="up_contract_display"></div>
+    <div class="dropzone" id="dropzone" style="margin-top:16px;" onclick="document.getElementById('fileInput').click()">
+      <div style="font-size:22px;margin-bottom:6px;">⇪</div>
+      Húzd ide a fájlt, vagy kattints a tallózáshoz
+      <input type="file" id="fileInput" style="display:none;">
+    </div>
+    <div id="fileNamePreview" style="font-size:13px;color:#3A3A2E;margin-top:10px;"></div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:18px;">
+      <button class="btn-ghost" onclick="closeModal('uploadOverlay')">Mégse</button>
+      <button class="btn-primary" id="upConfirmBtn" onclick="confirmUpload()" disabled style="opacity:.5;">Feltöltés véglegesítése</button>
+    </div>
+  </div>
+</div>
+
+<!-- Új kommunikációs bejegyzés -->
+<div class="overlay" id="newCommOverlay">
+  <div class="card modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-size:16px;font-weight:700;color:#1C2536;">Új kommunikációs bejegyzés</div>
+      <button onclick="closeModal('newCommOverlay')" style="background:none;border:none;cursor:pointer;color:#9A9584;font-size:18px;">×</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-top:16px;">
+      <label class="label">Típus<br>
+        <select class="field-input" id="cm_tipus" style="width:100%;margin-top:4px;" onchange="toggleCommStatus()">
+          <option value="ajánlat">Ajánlat</option>
+          <option value="megbeszélés">Megbeszélés</option>
+          <option value="ügyfélértékelés">Ügyfélértékelő megbeszélés</option>
+          <option value="reklamáció">Reklamáció</option>
+          <option value="ticket">Ticket</option>
+        </select>
+      </label>
+      <label class="label">Tárgy *<br><input class="field-input" id="cm_targy" style="width:100%;margin-top:4px;"></label>
+      <label class="label">Leírás<br><textarea class="field-input" id="cm_leiras" rows="3" style="width:100%;margin-top:4px;resize:vertical;"></textarea></label>
+      <div id="cm_status_wrap" style="display:none;">
+        <label class="label">Státusz<br>
+          <select class="field-input" id="cm_statusz" style="width:100%;margin-top:4px;">
+            <option value="nyitva">Nyitva</option>
+            <option value="lezárva">Lezárva</option>
+          </select>
+        </label>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:20px;">
+      <button class="btn-ghost" onclick="closeModal('newCommOverlay')">Mégse</button>
+      <button class="btn-primary" onclick="createComm()">Bejegyzés mentése</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const OFFICES = ["Budapest","Debrecen","Szeged","Pécs","Győr"];
+const CRM_STAGES = ["Új lead","Kapcsolatfelvétel","Ajánlat kiküldve","Tárgyalás","Megbízóvá alakítva","Elutasítva"];
+const CRM_STAGE_COLOR = {
+  "Új lead": "#6B7286", "Kapcsolatfelvétel": "#2C5C8A", "Ajánlat kiküldve": "#B8863F",
+  "Tárgyalás": "#8A5CB8", "Megbízóvá alakítva": "#2F7A4E", "Elutasítva": "#B4402C"
+};
+const COLLEAGUES = ["Kiss Andrea","Tóth Bálint","Farkas Dóra"];
+
+let partners = [
+ {id:1, nev:"Tesco-Global Zrt.", adoszam:"10309709-2-44", cim:"2040 Budaörs, Kinizsi út 1-3.", iroda:"Budapest", statusz:"aktív", letrehozva:"2019.03.12", kapcsolat_tipus:"partner", felelos:"Kiss Andrea", crm_statusz:"Megbízóvá alakítva",
+   kapcsolattartok:[
+     {id:1, nev:"Balogh Réka", email:"balogh.reka@tesco.hu", telefon:"+36 30 900 1122", vezetekes:"", beosztas:"HR üzletág", szamlazasi:true, hozzaferes:"iras", megjegyzes:""},
+     {id:2, nev:"Simon Gábor", email:"simon.gabor@tesco.hu", telefon:"+36 20 111 4455", vezetekes:"", beosztas:"Áruházvezető", szamlazasi:false, hozzaferes:"olvasas", megjegyzes:""}
+   ]},
+ {id:2, nev:"Auchan Retail Magyarország Kft.", adoszam:"12167969-2-44", cim:"2040 Budaörs, Sport u. 2/A", iroda:"Budapest", statusz:"aktív", letrehozva:"2020.06.01", kapcsolat_tipus:"partner", felelos:"Tóth Bálint", crm_statusz:"Megbízóvá alakítva",
+   kapcsolattartok:[{id:3, nev:"Kelemen Zsolt", email:"kelemen.zsolt@auchan.hu", telefon:"+36 20 456 7788", vezetekes:"+36 1 555 0102", beosztas:"HR referens", szamlazasi:true, hozzaferes:"iras", megjegyzes:""}]},
+ {id:3, nev:"DM Kereskedelmi Kft.", adoszam:"10832561-2-44", cim:"2045 Törökbálint, Torbágy u. 22.", iroda:"Budapest", statusz:"aktív", letrehozva:"2021.02.18", kapcsolat_tipus:"partner", felelos:"Farkas Dóra", crm_statusz:"Megbízóvá alakítva",
+   kapcsolattartok:[
+     {id:4, nev:"Farkas Nóra", email:"farkas.nora@dm.hu", telefon:"+36 70 234 5566", vezetekes:"", beosztas:"HR üzletág", szamlazasi:false, hozzaferes:"olvasas", megjegyzes:""},
+     {id:5, nev:"Deák Tamás", email:"deak.tamas@dm.hu", telefon:"+36 30 555 1212", vezetekes:"", beosztas:"Logisztikai vezető", szamlazasi:false, hozzaferes:"nincs", megjegyzes:""},
+     {id:6, nev:"Papp Ildikó", email:"papp.ildiko@dm.hu", telefon:"+36 20 888 3344", vezetekes:"", beosztas:"Pénzügy", szamlazasi:true, hozzaferes:"olvasas", megjegyzes:"Csak számlázási ügyekben keresendő."}
+   ]},
+ {id:4, nev:"Penny Market Kft.", adoszam:"10894188-2-44", cim:"2351 Alsónémedi, Északi Ipari Park", iroda:"Debrecen", statusz:"inaktív", letrehozva:"2018.11.09", kapcsolat_tipus:"partner", felelos:"Kiss Andrea", crm_statusz:"Megbízóvá alakítva",
+   kapcsolattartok:[{id:7, nev:"Szűcs Dávid", email:"szucs.david@penny.hu", telefon:"+36 30 111 2244", vezetekes:"", beosztas:"HR üzletág", szamlazasi:true, hozzaferes:"nincs", megjegyzes:""}]},
+ {id:5, nev:"IKEA Lakberendezési Kft.", adoszam:"11908527-2-44", cim:"1148 Budapest, Örs vezér tere", iroda:"Budapest", statusz:"aktív", letrehozva:"2022.09.05", kapcsolat_tipus:"partner", felelos:"Tóth Bálint", crm_statusz:"Megbízóvá alakítva",
+   kapcsolattartok:[{id:8, nev:"Tamás Eszter", email:"tamas.eszter@ikea.hu", telefon:"+36 20 887 6655", vezetekes:"", beosztas:"HR üzletág", szamlazasi:true, hozzaferes:"iras", megjegyzes:""}]},
+ {id:6, nev:"Praktiker Kft.", adoszam:"12885000-2-13", cim:"6724 Szeged, Cserzy Mihály u.", iroda:"Szeged", statusz:"aktív", letrehozva:"2023.01.20", kapcsolat_tipus:"partner", felelos:"Farkas Dóra", crm_statusz:"Megbízóvá alakítva",
+   kapcsolattartok:[
+     {id:9, nev:"Kovács Bálint", email:"kovacs.balint@praktiker.hu", telefon:"+36 70 998 1234", vezetekes:"", beosztas:"Áruházvezető", szamlazasi:false, hozzaferes:"olvasas", megjegyzes:""},
+     {id:10, nev:"Szilágyi Fanni", email:"szilagyi.fanni@praktiker.hu", telefon:"+36 30 442 7788", vezetekes:"", beosztas:"HR referens", szamlazasi:true, hozzaferes:"iras", megjegyzes:""}
+   ]},
+ {id:7, nev:"Rossmann Magyarország Kft.", adoszam:"—", cim:"", iroda:"Budapest", statusz:"aktív", letrehozva:"2026.05.14", kapcsolat_tipus:"lead", felelos:"Kiss Andrea", crm_statusz:"Tárgyalás",
+   kapcsolattartok:[{id:11, nev:"Németh Orsolya", email:"nemeth.orsolya@rossmann.hu", telefon:"+36 30 221 9988", vezetekes:"", beosztas:"HR üzletág", szamlazasi:false, hozzaferes:"nincs", megjegyzes:""}]},
+ {id:8, nev:"Decathlon Sport Kft.", adoszam:"—", cim:"", iroda:"Győr", statusz:"aktív", letrehozva:"2026.06.02", kapcsolat_tipus:"lead", felelos:"Tóth Bálint", crm_statusz:"Ajánlat kiküldve",
+   kapcsolattartok:[{id:12, nev:"Vincze Ábel", email:"vincze.abel@decathlon.hu", telefon:"+36 20 774 1122", vezetekes:"", beosztas:"Áruházvezető", szamlazasi:false, hozzaferes:"nincs", megjegyzes:""}]},
+ {id:9, nev:"Lidl Magyarország Kft.", adoszam:"—", cim:"", iroda:"Debrecen", statusz:"aktív", letrehozva:"2026.06.24", kapcsolat_tipus:"lead", felelos:"Farkas Dóra", crm_statusz:"Új lead",
+   kapcsolattartok:[{id:13, nev:"Erdős Kata", email:"erdos.kata@lidl.hu", telefon:"+36 70 332 1188", vezetekes:"", beosztas:"HR üzletág", szamlazasi:false, hozzaferes:"nincs", megjegyzes:""}]},
+ {id:10, nev:"Spar Magyarország Kft.", adoszam:"—", cim:"", iroda:"Budapest", statusz:"aktív", letrehozva:"2026.06.19", kapcsolat_tipus:"lead", felelos:"Kiss Andrea", crm_statusz:"Kapcsolatfelvétel",
+   kapcsolattartok:[{id:14, nev:"Halász Bence", email:"halasz.bence@spar.hu", telefon:"+36 30 665 4321", vezetekes:"", beosztas:"Beszerzési vezető", szamlazasi:false, hozzaferes:"nincs", megjegyzes:""}]}
+];
+
+let communications = [
+ {id:1, partner_id:1, tipus:"ajánlat", datum:"2018.12.03", szerzo:"Kiss Andrea", targy:"Kezdeti együttműködési ajánlat", leiras:"Első árajánlat diákmunkaerő biztosítására a budaörsi áruházba, heti 40 fő kapacitással.", statusz:null},
+ {id:2, partner_id:1, tipus:"megbeszélés", datum:"2019.02.20", szerzo:"Kiss Andrea", targy:"Szerződéskötés előkészítése", leiras:"Személyes egyeztetés a bérezési struktúráról és a munkaidő-beosztás rendszeréről.", statusz:null},
+ {id:3, partner_id:1, tipus:"ügyfélértékelés", datum:"2025.11.10", szerzo:"Tóth Bálint", targy:"Éves partnerértékelő megbeszélés", leiras:"Együttműködés minősítése: kiváló. Elégedettek a kiszolgálás gyorsaságával, bővítést terveznek 2026 Q3-ra.", statusz:null},
+ {id:4, partner_id:1, tipus:"reklamáció", datum:"2026.04.18", szerzo:"Nagy Petra", targy:"Késve érkezett munkalapok", leiras:"A partner jelezte, hogy a márciusi munkalapok lezárása 5 napot csúszott, ami a bérfizetést is érintette.", statusz:"lezárva"},
+ {id:5, partner_id:1, tipus:"ticket", datum:"2026.06.28", szerzo:"Nagy Petra", targy:"Kapcsolattartó adatváltozás", leiras:"A partner új telefonszámot adott meg Balogh Réka részére, rendszerben átvezetve.", statusz:"lezárva"},
+ {id:6, partner_id:3, tipus:"ticket", datum:"2026.06.20", szerzo:"Farkas Dóra", targy:"Számla-korrekció kérése", leiras:"A partner a májusi számlán díjazási eltérést jelzett, könyvelés felé továbbítva.", statusz:"nyitva"},
+ {id:7, partner_id:7, tipus:"ajánlat", datum:"2026.05.14", szerzo:"Kiss Andrea", targy:"Bemutatkozó ajánlat — nyári diákmunka program", leiras:"Kezdeti megkeresés a Rossmann HR csapata felé, 3 budapesti üzletbe nyári diákmunkaerő biztosítására.", statusz:null},
+ {id:8, partner_id:7, tipus:"megbeszélés", datum:"2026.06.03", szerzo:"Kiss Andrea", targy:"Igényfelmérő hívás", leiras:"Telefonos egyeztetés a szükséges létszámról (kb. 25 fő) és a kívánt indulási időpontról (2026.08.01).", statusz:null},
+ {id:9, partner_id:8, tipus:"ajánlat", datum:"2026.06.02", szerzo:"Tóth Bálint", targy:"Árajánlat — győri áruház szezonális igény", leiras:"Írásos ajánlat küldve a decathlon.hu kapcsolattartónak, válaszra várunk.", statusz:null},
+ {id:10, partner_id:9, tipus:"megbeszélés", datum:"2026.06.24", szerzo:"Farkas Dóra", targy:"Beérkező érdeklődés — konferencián kapott elérhetőség", leiras:"A Lidl HR üzletág képviselője a HR Fest konferencián kért tájékoztatót a szolgáltatásról.", statusz:null},
+ {id:11, partner_id:10, tipus:"megbeszélés", datum:"2026.06.19", szerzo:"Kiss Andrea", targy:"Első telefonos egyeztetés", leiras:"Bemutatkozó hívás a Spar beszerzési vezetőjével, igényfelmérés folyamatban.", statusz:null}
+];
+
+let contracts = [
+ {id:1, partner_id:1, tipus:"Keretszerződés", statusz:"aláírt", kezdete:"2023.01.01", vege:"2027.12.31", dokumentum:"Tesco_keretszerzodes_2023.pdf"},
+ {id:2, partner_id:1, tipus:"Eseti szerződés", statusz:"lejárt", kezdete:"2025.05.01", vege:"2025.08.31", dokumentum:"Tesco_eseti_2025_05.pdf"},
+ {id:3, partner_id:2, tipus:"Keretszerződés", statusz:"aláírt", kezdete:"2020.06.01", vege:"2026.06.01", dokumentum:"Auchan_kszerz_2020.pdf"},
+ {id:4, partner_id:3, tipus:"Eseti szerződés", statusz:"piszkozat", kezdete:"2026.07.01", vege:null, dokumentum:null},
+ {id:5, partner_id:4, tipus:"Keretszerződés", statusz:"lejárt", kezdete:"2018.11.09", vege:"2025.11.09", dokumentum:"Penny_kszerz_2018.pdf"},
+ {id:6, partner_id:5, tipus:"Keretszerződés", statusz:"aláírt", kezdete:"2022.09.05", vege:"2027.09.05", dokumentum:"IKEA_kszerz_2022.pdf"},
+ {id:7, partner_id:6, tipus:"Eseti szerződés", statusz:"aláírt", kezdete:"2026.02.01", vege:"2026.12.31", dokumentum:null}
+];
+
+let view = "partnerek";
+let selectedId = null;
+let profileTab = "alap";
+let actionsOpen = false;
+let pendingContractPartnerId = null;
+let pendingUploadContractId = null;
+let pendingFileName = null;
+let draggedCardId = null;
+
+function esc(s){ return (s===null||s===undefined) ? "" : String(s); }
+
+function showToast(text){
+  const t = document.getElementById("toast");
+  t.innerHTML = "✓ " + text;
+  t.classList.add("show");
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => t.classList.remove("show"), 2600);
+}
+
+function render(){
+  const main = document.getElementById("main");
+  main.innerHTML = selectedId ? renderPartnerProfile() : (view === "partnerek" ? renderPartnersList() : view === "crm" ? renderCRMBoard() : renderContractsList());
+  wireEvents();
+}
+
+function segmentBar(){
+  return `<div class="segment">
+    <button class="${view==='partnerek'?'active':''}" onclick="setView('partnerek')">Partnerek</button>
+    <button class="${view==='crm'?'active':''}" onclick="setView('crm')">CRM</button>
+    <button class="${view==='szerzodesek'?'active':''}" onclick="setView('szerzodesek')">Szerződések</button>
+  </div>`;
+}
+function setView(v){ view = v; render(); }
+
+function renderPartnersList(){
+  const q = (document.getElementById("_q")?.value || "").toLowerCase();
+  const statusF = document.getElementById("_status")?.value || "mind";
+  const officeF = document.getElementById("_office")?.value || "mind";
+
+  const filtered = partners.filter(p=>{
+    if (p.kapcsolat_tipus !== "partner") return false;
+    if (statusF !== "mind" && p.statusz !== statusF) return false;
+    if (officeF !== "mind" && p.iroda !== officeF) return false;
+    if (q && !p.nev.toLowerCase().includes(q) && !p.adoszam.includes(q)) return false;
+    return true;
+  });
+
+  const rows = filtered.map(p => {
+    const primary = p.kapcsolattartok[0];
+    const extra = p.kapcsolattartok.length - 1;
+    return `<tr class="row" data-id="${p.id}">
+      <td style="font-weight:600;color:#1C2536;">${esc(p.nev)}</td>
+      <td>${esc(p.adoszam)}</td>
+      <td>${esc(primary?.nev)}${extra > 0 ? ` <span style="color:#8A8570;font-weight:400;">+${extra}</span>` : ""}</td>
+      <td>${esc(p.iroda)}</td>
+      <td><span class="badge status-${p.statusz}"><span class="dot" style="background:currentColor;"></span>${p.statusz}</span></td>
+      <td style="text-align:right;" onclick="event.stopPropagation()">
+        <button class="icon-btn" title="Megtekintés" onclick="openPartner(${p.id})">👁</button>
+        <button class="icon-btn" title="Szerkesztés" onclick="openPartner(${p.id})">✎</button>
+      </td>
+    </tr>`;
+  }).join("");
+
+  return `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">
+      <div>
+        <div style="font-size:20px;font-weight:700;color:#1C2536;">Partnerek</div>
+        <div style="font-size:13px;color:#8A8570;margin-top:2px;">${filtered.length} partner a szűrésnek megfelelően · ${partners.length} összesen</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;position:relative;">
+        ${segmentBar()}
+        <button class="btn-ghost" id="actionsBtn">Műveletek ▾</button>
+        <div class="action-menu ${actionsOpen?'open':''}" id="actionsMenu">
+          <button class="action-item" onclick="exportAction('Partner riport')">⬇ Partner riport</button>
+          <button class="action-item" onclick="exportAction('Minden partner riport')">⬇ Minden partner riport</button>
+        </div>
+        <button class="btn-primary" onclick="openModal('newPartnerOverlay')">+ Új lead / partner</button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:18px;padding:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+      <input class="field-input" id="_q" placeholder="Keresés cégnév vagy adószám alapján…" style="flex:1 1 220px;">
+      <select class="field-input" id="_status">
+        <option value="mind">Minden státusz</option>
+        <option value="aktív">aktív</option>
+        <option value="inaktív">inaktív</option>
+      </select>
+      <select class="field-input" id="_office">
+        <option value="mind">Minden iroda</option>
+        ${OFFICES.map(o=>`<option value="${o}">${o}</option>`).join("")}
+      </select>
+    </div>
+
+    <div class="card" style="margin-top:14px;overflow:hidden;">
+      <table>
+        <thead><tr>
+          <th>Cégnév</th><th>Adószám</th><th>Kapcsolattartó</th><th>Iroda</th><th>Státusz</th><th></th>
+        </tr></thead>
+        <tbody>${rows || `<tr><td colspan="6" style="text-align:center;color:#9A9584;padding:28px;">Nincs a szűrésnek megfelelő partner.</td></tr>`}</tbody>
+      </table>
+    </div>`;
+}
+
+function renderCRMBoard(){
+  const ownerF = document.getElementById("_crmowner")?.value || "mind";
+  const q = (document.getElementById("_crmq")?.value || "").toLowerCase();
+
+  const leads = partners.filter(p => {
+    if (p.kapcsolat_tipus !== "lead") return false;
+    if (ownerF !== "mind" && p.felelos !== ownerF) return false;
+    if (q && !p.nev.toLowerCase().includes(q)) return false;
+    return true;
+  });
+
+  const columns = CRM_STAGES.filter(s => s !== "Megbízóvá alakítva").map(stage => {
+    const items = leads.filter(p => p.crm_statusz === stage);
+    const color = CRM_STAGE_COLOR[stage];
+    const cards = items.map(p => {
+      const lastComm = communications.filter(c => c.partner_id === p.id).sort((a,b)=> a.datum < b.datum ? 1 : -1)[0];
+      return `<div class="crm-card" data-id="${p.id}" draggable="true" style="border-left:3px solid ${color};">
+        <div style="font-size:13.5px;font-weight:600;color:#1C2536;">${esc(p.nev)}</div>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:6px;">
+          <div style="width:20px;height:20px;border-radius:50%;background:#1C2536;color:#E9C989;display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:700;flex-shrink:0;">${p.felelos.split(" ").map(n=>n[0]).join("")}</div>
+          <span style="font-size:11.5px;color:#8A8570;">${esc(p.felelos)}</span>
+        </div>
+        ${lastComm ? `<div style="font-size:11px;color:#3A3A2E;margin-top:8px;padding-top:8px;border-top:1px solid #EFECE3;">
+          <span style="font-weight:600;text-transform:capitalize;">${lastComm.tipus}</span> · ${esc(lastComm.datum)}<br>
+          <span style="color:#8A8570;">${esc(lastComm.targy)}</span>
+        </div>` : `<div style="font-size:11px;color:#B4402C;margin-top:8px;padding-top:8px;border-top:1px solid #EFECE3;">Még nincs rögzített kommunikáció</div>`}
+      </div>`;
+    }).join("");
+    return `<div class="crm-col">
+      <div class="crm-col-head" style="border-top:3px solid ${color};">
+        <span>${stage}</span><span class="crm-count">${items.length}</span>
+      </div>
+      <div class="crm-col-body" data-stage="${stage}">${cards || `<div style="font-size:12px;color:#B0AB98;padding:10px 2px;pointer-events:none;">Üres</div>`}</div>
+    </div>`;
+  }).join("");
+
+  return `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">
+      <div>
+        <div style="font-size:20px;font-weight:700;color:#1C2536;">CRM — érdeklődések</div>
+        <div style="font-size:13px;color:#8A8570;margin-top:2px;">${leads.length} aktív lead a pipeline-ban</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        ${segmentBar()}
+        <button class="btn-primary" onclick="openModal('newPartnerOverlay')">+ Új lead</button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:18px;padding:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+      <input class="field-input" id="_crmq" placeholder="Keresés cégnév alapján…" style="flex:1 1 220px;">
+      <select class="field-input" id="_crmowner">
+        <option value="mind">Minden felelős</option>
+        ${COLLEAGUES.map(c=>`<option value="${c}">${c}</option>`).join("")}
+      </select>
+    </div>
+
+    <div class="crm-board">${columns}</div>`;
+}
+
+function renderContractsList(){
+  const statusF = document.getElementById("_cstatus")?.value || "mind";
+  const filtered = contracts.filter(c => statusF === "mind" || c.statusz === statusF);
+
+  const rows = filtered.map(c => {
+    const p = partners.find(x => x.id === c.partner_id);
+    return `<tr class="row" data-id="${c.partner_id}">
+      <td style="font-weight:600;color:#1C2536;">${esc(p?.nev)}</td>
+      <td>${esc(c.tipus)}</td>
+      <td><span class="badge status-${c.statusz}"><span class="dot" style="background:currentColor;"></span>${c.statusz}</span></td>
+      <td>${esc(c.kezdete)}</td>
+      <td>${esc(c.vege) || "—"}</td>
+      <td>${c.dokumentum ? `<span style="color:#2F7A4E;font-size:12px;font-weight:600;">📄 ${esc(c.dokumentum)}</span>` : '<span style="color:#B4402C;font-size:12px;font-weight:600;">nincs dokumentum</span>'}</td>
+      <td style="text-align:right;" onclick="event.stopPropagation()">
+        <button class="icon-btn" title="Dokumentum feltöltése" onclick="openUploadModal(${c.id})">⇪</button>
+      </td>
+    </tr>`;
+  }).join("");
+
+  return `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">
+      <div>
+        <div style="font-size:20px;font-weight:700;color:#1C2536;">Szerződések</div>
+        <div style="font-size:13px;color:#8A8570;margin-top:2px;">${filtered.length} szerződés · ${contracts.length} összesen</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        ${segmentBar()}
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:18px;padding:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+      <select class="field-input" id="_cstatus">
+        <option value="mind">Minden státusz</option>
+        <option value="aláírt">aláírt</option>
+        <option value="piszkozat">piszkozat</option>
+        <option value="lejárt">lejárt</option>
+      </select>
+      <span style="font-size:12.5px;color:#8A8570;">A feltöltés ikonra kattintva csatolhatod a szerződés dokumentumát. A sorra kattintva a partnerhez jutsz.</span>
+    </div>
+
+    <div class="card" style="margin-top:14px;overflow:hidden;">
+      <table>
+        <thead><tr>
+          <th>Partner</th><th>Típus</th><th>Státusz</th><th>Kezdete</th><th>Vége</th><th>Dokumentum</th><th></th>
+        </tr></thead>
+        <tbody>${rows || `<tr><td colspan="7" style="text-align:center;color:#9A9584;padding:28px;">Nincs a szűrésnek megfelelő szerződés.</td></tr>`}</tbody>
+      </table>
+    </div>`;
+}
+
+function openPartner(id){ selectedId = id; profileTab = "alap"; render(); }
+function backToList(){ selectedId = null; render(); }
+
+const PROFILE_TABS = [["alap","Alapadatok"],["kapcsolattartok","Kapcsolattartók"],["kommunikacio","Kommunikáció"],["szerzodesek","Szerződések"],["naplo","Változásnapló"]];
+
+function renderPartnerProfile(){
+  const p = partners.find(x => x.id === selectedId);
+  const myContracts = contracts.filter(c => c.partner_id === p.id);
+  const myComms = communications.filter(c => c.partner_id === p.id).sort((a,b) => a.datum < b.datum ? 1 : -1);
+
+  let body = "";
+  if (profileTab === "alap") {
+    body = `<div class="grid3">
+      <div><div class="label">Cégnév</div><div style="font-size:14.5px;font-weight:500;margin-top:4px;">${esc(p.nev)}</div></div>
+      <div><div class="label">Adószám</div><div style="font-size:14.5px;font-weight:500;margin-top:4px;">${esc(p.adoszam)}</div></div>
+      <div><div class="label">Iroda</div><div style="font-size:14.5px;font-weight:500;margin-top:4px;">${esc(p.iroda)}</div></div>
+      <div><div class="label">Cím</div><div style="font-size:14.5px;font-weight:500;margin-top:4px;">${esc(p.cim)}</div></div>
+      <div><div class="label">Partner létrehozva</div><div style="font-size:14.5px;font-weight:500;margin-top:4px;">${esc(p.letrehozva)}</div></div>
+      <div><div class="label">Felelős kolléga</div><div style="font-size:14.5px;font-weight:500;margin-top:4px;">${esc(p.felelos)}</div></div>
+      <div><div class="label">Státusz</div><span class="badge status-${p.statusz}" style="margin-top:4px;"><span class="dot" style="background:currentColor;"></span>${p.statusz}</span></div>
+    </div>`;
+  } else if (profileTab === "kapcsolattartok") {
+    const accessLabel = { nincs: "Nincs hozzáférés", olvasas: "Olvasási jog", iras: "Írási jog" };
+    const accessColor = { nincs: "#7A7460", olvasas: "#2F7A4E", iras: "#B8863F" };
+    const cards = p.kapcsolattartok.map(k => `
+      <div class="contact-card">
+        <div style="width:38px;height:38px;border-radius:50%;background:#1C2536;color:#E9C989;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;">${k.nev.split(" ").map(n=>n[0]).join("").slice(0,2)}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            ${esc(k.nev)}
+            ${k.beosztas ? `<span style="font-weight:400;color:#8A8570;font-size:12px;">${esc(k.beosztas)}</span>` : ""}
+            ${k.szamlazasi ? `<span class="badge" style="background:#FBF0DF;color:#B4791F;">💳 Számlázási kapcsolattartó</span>` : ""}
+          </div>
+          <div style="font-size:12.5px;color:#3A3A2E;margin-top:3px;">📧 ${esc(k.email) || "—"} &nbsp;·&nbsp; 📞 ${esc(k.telefon) || "—"}${k.vezetekes ? ` &nbsp;·&nbsp; ☎ ${esc(k.vezetekes)}` : ""}</div>
+          <div style="font-size:12px;margin-top:4px;color:${accessColor[k.hozzaferes || 'nincs']};font-weight:600;">Partnerfelület: ${accessLabel[k.hozzaferes || 'nincs']}</div>
+          ${k.megjegyzes ? `<div style="font-size:12px;color:#8A8570;margin-top:3px;font-style:italic;">${esc(k.megjegyzes)}</div>` : ""}
+        </div>
+        <button class="icon-btn" title="Törlés" onclick="removeContact(${k.id})">🗑</button>
+      </div>`).join("");
+    body = `
+      <div style="display:flex;flex-direction:column;gap:10px;max-width:560px;">${cards}</div>
+      <button class="btn-ghost sm" style="margin-top:14px;" onclick="openContactModal()">+ Új kapcsolattartó</button>`;
+  } else if (profileTab === "kommunikacio") {
+    const commIcon = { "ajánlat": "📝", "megbeszélés": "🗣", "ügyfélértékelés": "⭐", "reklamáció": "⚠", "ticket": "🎫" };
+    const commColor = { "ajánlat": "#2C5C8A", "megbeszélés": "#6B4FA0", "ügyfélértékelés": "#2F7A4E", "reklamáció": "#B4402C", "ticket": "#B4791F" };
+    const items = myComms.map(c => `
+      <div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #EFECE3;">
+        <div style="width:30px;height:30px;border-radius:50%;background:${commColor[c.tipus]}18;color:${commColor[c.tipus]};display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">${commIcon[c.tipus]}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span style="font-size:13.5px;font-weight:600;color:#1C2536;">${esc(c.targy)}</span>
+            <span class="badge" style="background:${commColor[c.tipus]}18;color:${commColor[c.tipus]};text-transform:capitalize;">${c.tipus}</span>
+            ${c.statusz ? `<span class="badge status-${c.statusz === 'nyitva' ? 'piszkozat' : 'aláírt'}">${c.statusz}</span>` : ""}
+          </div>
+          <div style="font-size:13px;color:#3A3A2E;margin-top:4px;line-height:1.5;">${esc(c.leiras)}</div>
+          <div style="font-size:11.5px;color:#8A8570;margin-top:5px;">${esc(c.datum)} · ${esc(c.szerzo)}</div>
+        </div>
+      </div>`).join("");
+    body = `
+      <div style="display:flex;justify-content:flex-end;margin-bottom:6px;">
+        <button class="btn-ghost sm" onclick="openCommModal()">+ Új bejegyzés</button>
+      </div>
+      <div style="max-width:640px;">${items || `<div style="color:#9A9584;font-size:13.5px;padding:16px 0;">Ehhez a partnerhez még nincs rögzített kommunikáció.</div>`}</div>`;
+  } else if (profileTab === "szerzodesek") {
+    const rows = myContracts.map(c => `<tr>
+      <td style="font-weight:600;color:#1C2536;">${esc(c.tipus)}</td>
+      <td><span class="badge status-${c.statusz}"><span class="dot" style="background:currentColor;"></span>${c.statusz}</span></td>
+      <td>${esc(c.kezdete)}</td>
+      <td>${esc(c.vege) || "—"}</td>
+      <td>${c.dokumentum ? `<span style="color:#2F7A4E;font-size:12px;font-weight:600;">📄 ${esc(c.dokumentum)}</span>` : '<span style="color:#B4402C;font-size:12px;font-weight:600;">nincs dokumentum</span>'}</td>
+      <td style="text-align:right;"><button class="icon-btn" title="Dokumentum feltöltése" onclick="openUploadModal(${c.id})">⇪</button></td>
+    </tr>`).join("");
+    body = `
+      <div style="display:flex;justify-content:flex-end;margin-bottom:10px;">
+        <button class="btn-ghost sm" onclick="openContractModal(${p.id})">+ Új szerződés</button>
+      </div>
+      <div class="card" style="overflow:hidden;">
+        <table>
+          <thead><tr><th>Típus</th><th>Státusz</th><th>Kezdete</th><th>Vége</th><th>Dokumentum</th><th></th></tr></thead>
+          <tbody>${rows || `<tr><td colspan="6" style="text-align:center;color:#9A9584;padding:22px;">Ehhez a partnerhez még nincs szerződés.</td></tr>`}</tbody>
+        </table>
+      </div>`;
+  } else if (profileTab === "naplo") {
+    body = `<div style="display:flex;flex-direction:column;gap:10px;font-size:13.5px;">
+      <div style="padding:10px 12px;border:1px solid #E4E0D6;border-radius:8px;"><b>2026.06.28</b> — Kapcsolattartó telefonszám módosítva (Ügyfélsz. — Nagy Petra)</div>
+      <div style="padding:10px 12px;border:1px solid #E4E0D6;border-radius:8px;"><b>2026.03.02</b> — Iroda átsorolva (Ügyfélsz. — Tóth Bálint)</div>
+      <div style="padding:10px 12px;border:1px solid #E4E0D6;border-radius:8px;"><b>${esc(p.letrehozva)}</b> — Partner létrehozva</div>
+    </div>`;
+  }
+
+  return `
+    <button class="btn-ghost" onclick="backToList()">← Vissza a listához</button>
+    <div class="card" style="margin-top:14px;padding:20px 24px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div style="width:46px;height:46px;border-radius:12px;background:#1C2536;color:#E9C989;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;">🏢</div>
+          <div>
+            <div style="font-size:19px;font-weight:700;color:#1C2536;">${esc(p.nev)}</div>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:4px;flex-wrap:wrap;">
+              ${p.kapcsolat_tipus === "lead"
+                ? `<span class="badge" style="background:${CRM_STAGE_COLOR[p.crm_statusz]}18;color:${CRM_STAGE_COLOR[p.crm_statusz]};">${esc(p.crm_statusz)}</span>`
+                : `<span class="badge" style="background:#E6EEF6;color:#2C5C8A;">Megbízó</span>`}
+              <span class="badge status-${p.statusz}"><span class="dot" style="background:currentColor;"></span>${p.statusz}</span>
+              <span style="font-size:12.5px;color:#8A8570;">${esc(p.iroda)}${p.adoszam && p.adoszam !== "—" ? ` · ${esc(p.adoszam)}` : ""} · felelős: ${esc(p.felelos)}</span>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          ${p.kapcsolat_tipus === "lead" ? `<button class="btn-primary" onclick="convertToPartner(${p.id})">→ Megbízóvá alakítás</button>` : ""}
+          <button class="btn-ghost">✎ Szerkesztés</button>
+        </div>
+      </div>
+      <div class="tabs">
+        ${PROFILE_TABS.map(([id,label])=>{
+          const count = id === "kapcsolattartok" ? ` (${p.kapcsolattartok.length})` : id === "szerzodesek" ? ` (${myContracts.length})` : id === "kommunikacio" ? ` (${myComms.length})` : "";
+          return `<button class="tab-btn ${profileTab===id?'active':''}" data-tab="${id}">${label}${count}</button>`;
+        }).join("")}
+      </div>
+      <div style="padding-top:20px;">${body}</div>
+    </div>`;
+}
+
+function wireEvents(){
+  document.getElementById("_q")?.addEventListener("input", render);
+  document.getElementById("_status")?.addEventListener("change", render);
+  document.getElementById("_office")?.addEventListener("change", render);
+  document.getElementById("_cstatus")?.addEventListener("change", render);
+  document.getElementById("_crmq")?.addEventListener("input", render);
+  document.getElementById("_crmowner")?.addEventListener("change", render);
+  document.querySelectorAll(".crm-card").forEach(card=>{
+    card.addEventListener("click", ()=> { if (!card.classList.contains("dragging")) openPartner(Number(card.dataset.id)); });
+    card.addEventListener("dragstart", (e)=>{
+      draggedCardId = Number(card.dataset.id);
+      card.classList.add("dragging");
+      e.dataTransfer.effectAllowed = "move";
+    });
+    card.addEventListener("dragend", ()=> card.classList.remove("dragging"));
+  });
+  document.querySelectorAll(".crm-col-body").forEach(col=>{
+    col.addEventListener("dragover", (e)=>{ e.preventDefault(); col.classList.add("drag-over"); });
+    col.addEventListener("dragleave", ()=> col.classList.remove("drag-over"));
+    col.addEventListener("drop", (e)=>{
+      e.preventDefault();
+      col.classList.remove("drag-over");
+      if (draggedCardId !== null) moveCrmStage(draggedCardId, col.dataset.stage);
+      draggedCardId = null;
+    });
+  });
+  document.getElementById("actionsBtn")?.addEventListener("click", ()=>{ actionsOpen = !actionsOpen; render(); });
+  document.querySelectorAll(".row").forEach(r=>r.addEventListener("click", ()=> openPartner(Number(r.dataset.id))));
+  document.querySelectorAll(".tab-btn").forEach(b=>b.addEventListener("click", ()=>{ profileTab = b.dataset.tab; render(); }));
+}
+
+function exportAction(label){ showToast(`${label} elindítva (.xlsx).`); actionsOpen = false; render(); }
+
+function openModal(id){
+  if (id === "newPartnerOverlay") {
+    document.getElementById("np_iroda").innerHTML = OFFICES.map(o=>`<option>${o}</option>`).join("");
+    ["np_nev","np_ado","np_cim","np_kt_nev","np_kt_email","np_kt_tel"].forEach(f=>document.getElementById(f).value="");
+    document.getElementById("np_kt_hozzaferes").value = "nincs";
+  }
+  document.getElementById(id).classList.add("open");
+}
+function closeModal(id){ document.getElementById(id).classList.remove("open"); }
+
+function createPartner(){
+  const nev = document.getElementById("np_nev").value.trim();
+  const adoszam = document.getElementById("np_ado").value.trim();
+  if (!nev || !adoszam) { showToast("Töltsd ki a kötelező mezőket (Cégnév, Adószám)."); return; }
+  const id = Math.max(...partners.map(p=>p.id)) + 1;
+  const ktNev = document.getElementById("np_kt_nev").value.trim();
+  partners.unshift({
+    id, nev, adoszam, cim: document.getElementById("np_cim").value,
+    iroda: document.getElementById("np_iroda").value,
+    statusz: "aktív", letrehozva: "2026.07.01", kapcsolat_tipus: "lead",
+    felelos: "Kott Zoltán", crm_statusz: "Új lead",
+    kapcsolattartok: ktNev ? [{
+      id: Date.now(), nev: ktNev,
+      email: document.getElementById("np_kt_email").value,
+      telefon: document.getElementById("np_kt_tel").value,
+      vezetekes: "", beosztas: "", szamlazasi: true,
+      hozzaferes: document.getElementById("np_kt_hozzaferes").value,
+      megjegyzes: ""
+    }] : []
+  });
+  closeModal("newPartnerOverlay");
+  showToast(`${nev} felvéve lead státusszal — a Kommunikáció fülön követhető a kapcsolat alakulása.`);
+  render();
+}
+
+function openContractModal(partnerId){
+  pendingContractPartnerId = partnerId || selectedId;
+  const p = partners.find(x => x.id === pendingContractPartnerId);
+  document.getElementById("nc_partner_display").textContent = p.nev;
+  document.getElementById("nc_kezdete").value = "";
+  document.getElementById("nc_vege").value = "";
+  openModal("newContractOverlay");
+}
+function createContract(){
+  const kezdete = document.getElementById("nc_kezdete").value.trim();
+  if (!kezdete) { showToast("Add meg a szerződés kezdetét."); return; }
+  const id = Math.max(...contracts.map(c=>c.id)) + 1;
+  contracts.unshift({
+    id, partner_id: pendingContractPartnerId,
+    tipus: document.getElementById("nc_tipus").value,
+    statusz: "piszkozat", kezdete, vege: document.getElementById("nc_vege").value || null,
+    dokumentum: null
+  });
+  closeModal("newContractOverlay");
+  showToast("Új szerződés létrehozva piszkozat státusszal.");
+  render();
+}
+
+function openContactModal(){
+  ["nk_nev","nk_email","nk_tel","nk_vezetekes","nk_beosztas","nk_megjegyzes"].forEach(f=>document.getElementById(f).value="");
+  document.getElementById("nk_szamlazasi").checked = false;
+  document.getElementById("nk_hozzaferes").value = "nincs";
+  openModal("newContactOverlay");
+}
+function createContact(){
+  const nev = document.getElementById("nk_nev").value.trim();
+  if (!nev) { showToast("Add meg a kapcsolattartó nevét."); return; }
+  const p = partners.find(x => x.id === selectedId);
+  p.kapcsolattartok.push({
+    id: Date.now(), nev,
+    email: document.getElementById("nk_email").value,
+    telefon: document.getElementById("nk_tel").value,
+    vezetekes: document.getElementById("nk_vezetekes").value,
+    beosztas: document.getElementById("nk_beosztas").value,
+    szamlazasi: document.getElementById("nk_szamlazasi").checked,
+    hozzaferes: document.getElementById("nk_hozzaferes").value,
+    megjegyzes: document.getElementById("nk_megjegyzes").value
+  });
+  closeModal("newContactOverlay");
+  showToast(`${nev} hozzáadva a kapcsolattartókhoz.`);
+  render();
+}
+function removeContact(contactId){
+  const p = partners.find(x => x.id === selectedId);
+  p.kapcsolattartok = p.kapcsolattartok.filter(k => k.id !== contactId);
+  showToast("Kapcsolattartó törölve.");
+  render();
+}
+
+function moveCrmStage(id, stage){
+  const p = partners.find(x => x.id === id);
+  p.crm_statusz = stage;
+  if (stage === "Megbízóvá alakítva") {
+    p.kapcsolat_tipus = "partner";
+    showToast(`${p.nev} mostantól megbízó — átkerült a Partnerek listába.`);
+  } else if (stage === "Elutasítva") {
+    showToast(`${p.nev} lezárva mint elutasított lead.`);
+  } else {
+    showToast(`${p.nev} pipeline-státusza frissítve: ${stage}.`);
+  }
+  render();
+}
+
+function convertToPartner(id){
+  const p = partners.find(x => x.id === id);
+  p.kapcsolat_tipus = "partner";
+  p.crm_statusz = "Megbízóvá alakítva";
+  showToast(`${p.nev} mostantól megbízó — a korábbi kommunikáció is megmaradt.`);
+  render();
+}
+
+function openCommModal(){
+  document.getElementById("cm_tipus").value = "ajánlat";
+  document.getElementById("cm_targy").value = "";
+  document.getElementById("cm_leiras").value = "";
+  document.getElementById("cm_statusz").value = "nyitva";
+  toggleCommStatus();
+  openModal("newCommOverlay");
+}
+function toggleCommStatus(){
+  const tipus = document.getElementById("cm_tipus").value;
+  document.getElementById("cm_status_wrap").style.display = (tipus === "reklamáció" || tipus === "ticket") ? "block" : "none";
+}
+function createComm(){
+  const targy = document.getElementById("cm_targy").value.trim();
+  if (!targy) { showToast("Add meg a bejegyzés tárgyát."); return; }
+  const tipus = document.getElementById("cm_tipus").value;
+  const id = Math.max(...communications.map(c=>c.id), 0) + 1;
+  communications.unshift({
+    id, partner_id: selectedId, tipus,
+    datum: "2026.07.01", szerzo: "Kott Zoltán",
+    targy, leiras: document.getElementById("cm_leiras").value,
+    statusz: (tipus === "reklamáció" || tipus === "ticket") ? document.getElementById("cm_statusz").value : null
+  });
+  closeModal("newCommOverlay");
+  showToast("Kommunikációs bejegyzés mentve.");
+  render();
+}
+
+function openUploadModal(contractId){
+  pendingUploadContractId = contractId;
+  pendingFileName = null;
+  const c = contracts.find(x => x.id === contractId);
+  const p = partners.find(x => x.id === c.partner_id);
+  document.getElementById("up_contract_display").textContent = `${p.nev} · ${c.tipus}`;
+  document.getElementById("fileNamePreview").textContent = "";
+  document.getElementById("fileInput").value = "";
+  document.getElementById("upConfirmBtn").disabled = true;
+  document.getElementById("upConfirmBtn").style.opacity = ".5";
+  openModal("uploadOverlay");
+}
+function confirmUpload(){
+  if (!pendingFileName) return;
+  const c = contracts.find(x => x.id === pendingUploadContractId);
+  c.dokumentum = pendingFileName;
+  closeModal("uploadOverlay");
+  showToast(`${pendingFileName} feltöltve.`);
+  render();
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const dz = document.getElementById("dropzone");
+  const input = document.getElementById("fileInput");
+  const setFile = (name) => {
+    pendingFileName = name;
+    document.getElementById("fileNamePreview").textContent = "📄 " + name;
+    document.getElementById("upConfirmBtn").disabled = false;
+    document.getElementById("upConfirmBtn").style.opacity = "1";
+  };
+  input.addEventListener("change", () => { if (input.files[0]) setFile(input.files[0].name); });
+  dz.addEventListener("dragover", (e) => { e.preventDefault(); dz.classList.add("drag"); });
+  dz.addEventListener("dragleave", () => dz.classList.remove("drag"));
+  dz.addEventListener("drop", (e) => {
+    e.preventDefault(); dz.classList.remove("drag");
+    if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0].name);
+  });
+});
+
+render();
+</script>
+</body>
+</html>

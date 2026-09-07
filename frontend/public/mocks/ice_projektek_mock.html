@@ -1,0 +1,1430 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ICE — Projektek</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: 'Segoe UI', Roboto, -apple-system, sans-serif; background: #F6F4EF; color: #232619; }
+  input, select, button, textarea { font: inherit; }
+  .app { display: flex; min-height: 100vh; }
+
+  .sidebar { width: 208px; background: #1C2536; color: #CBD0DA; padding: 20px 14px; flex-shrink: 0; }
+  .brand { display: flex; align-items: center; gap: 8px; padding: 0 8px 22px; border-bottom: 1px solid #2C3750; margin-bottom: 16px; }
+  .brand-mark { width: 26px; height: 26px; border-radius: 7px; background: #E9C989; color: #1C2536; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; }
+  .brand-name { font-weight: 700; font-size: 14px; color: #fff; }
+  .nav-item { display: flex; align-items: center; gap: 9px; padding: 9px 10px; border-radius: 8px; font-size: 13px; font-weight: 600; margin-bottom: 2px; cursor: pointer; color: #9AA1B4; }
+  .nav-item.active { background: #2C3750; color: #fff; }
+
+  .main { flex: 1; padding: 22px 26px; overflow: auto; }
+  .card { background: #fff; border: 1px solid #E4E0D6; border-radius: 12px; }
+  .btn-ghost { display: inline-flex; align-items: center; gap: 6px; padding: 8px 13px; border-radius: 9px; border: 1px solid #D8D3C4; background: #fff; color: #3A3A2E; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .btn-primary { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 9px; border: 1px solid #1C2536; background: #1C2536; color: #F6F4EF; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .btn-ghost:hover { background: #FAF8F3; }
+  .btn-primary:hover { background: #263049; }
+  .btn-ghost.sm, .btn-primary.sm { padding: 5px 10px; font-size: 12px; border-radius: 7px; }
+  .field-input { font-size: 13px; padding: 8px 10px; border-radius: 8px; border: 1px solid #D8D3C4; outline: none; background: #fff; color: #232619; width: 100%; }
+  .field-input:disabled { background: #F1EFE9; color: #ABA48C; cursor: not-allowed; }
+  .label { font-size: 11px; font-weight: 600; color: #8A8570; text-transform: uppercase; letter-spacing: .04em; display: block; margin-bottom: 4px; }
+  .field { display: flex; flex-direction: column; }
+  .req::after { content: " *"; color: #B4402C; }
+
+  .badge { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+  .dot { width: 6px; height: 6px; border-radius: 999px; }
+  .status-aktív, .status-Feltöltve, .status-Jóváhagyva, .status-Aktív { background: #EAF3EC; color: #2F7A4E; }
+  .status-inaktív, .status-Elutasítva, .status-Inaktív { background: #F7EAE7; color: #B4402C; }
+  .status-piszkozat, .status-Elsődleges, .status-Beküldött { background: #F1EFE9; color: #7A7460; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th { text-align: left; padding: 9px 10px; font-size: 10.5px; font-weight: 700; color: #8A8570; text-transform: uppercase; letter-spacing: .03em; background: #FAF8F3; border-bottom: 1px solid #E4E0D6; white-space: nowrap; }
+  td { padding: 9px 10px; color: #3A3A2E; border-bottom: 1px solid #EFECE3; white-space: nowrap; }
+  tr.row:hover { background: #FBFAF6; cursor: pointer; }
+  .link { color: #1C4E7A; text-decoration: underline; cursor: pointer; }
+
+  .tabs { display: flex; gap: 2px; border-bottom: 1px solid #E4E0D6; flex-wrap: wrap; margin-top: 18px; }
+  .tab-btn { display: flex; align-items: center; gap: 6px; padding: 9px 12px; background: none; border: none; cursor: pointer; font-size: 12.5px; font-weight: 600; color: #9A9584; border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; }
+  .tab-btn.active { color: #1C2536; border-bottom: 2px solid #B8863F; }
+
+  .segment { display: inline-flex; background: #F1EFE9; border-radius: 9px; padding: 3px; gap: 2px; }
+  .segment button { border: none; background: none; padding: 7px 14px; border-radius: 7px; font-size: 12.5px; font-weight: 600; color: #8A8570; cursor: pointer; }
+  .segment button.active { background: #fff; color: #1C2536; box-shadow: 0 1px 2px rgba(0,0,0,.06); }
+
+  .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px 22px; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 14px 22px; }
+  .grid4 { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 14px 20px; }
+  .section-head { background: #EAF1F7; color: #1C4E7A; font-weight: 700; font-size: 13px; padding: 9px 14px; border-radius: 8px; margin: 22px 0 14px; }
+  .checkbox-row { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #3A3A2E; }
+  .subcard { border: 1px solid #E4E0D6; border-radius: 10px; padding: 14px; position: relative; margin-bottom: 10px; }
+
+  .overlay { position: fixed; inset: 0; background: rgba(20,20,10,.35); display: none; align-items: center; justify-content: center; z-index: 50; padding: 24px; overflow-y: auto; }
+  .overlay.open { display: flex; }
+  .modal { width: 460px; padding: 22px; max-height: 88vh; overflow-y: auto; }
+  .modal.wide { width: 780px; }
+  .modal.xwide { width: 960px; }
+  .toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); background: #1C2536; color: #F6F4EF; padding: 11px 18px; border-radius: 10px; font-size: 13.5px; font-weight: 600; box-shadow: 0 8px 24px rgba(0,0,0,.18); z-index: 60; display: none; align-items: center; gap: 8px; }
+  .toast.show { display: flex; }
+  .action-menu { position: absolute; top: 40px; right: 0; background: #fff; border: 1px solid #E4E0D6; border-radius: 10px; box-shadow: 0 10px 28px rgba(20,20,10,.12); width: 220px; z-index: 30; padding: 6px; display: none; }
+  .action-menu.open { display: block; }
+  .action-item { display: flex; align-items: center; gap: 9px; width: 100%; padding: 8px 10px; background: none; border: none; border-radius: 7px; cursor: pointer; font-size: 13px; color: #333; text-align: left; }
+  .action-item:hover { background: #F6F4EF; }
+  .sep { height: 1px; background: #E4E0D6; margin: 6px 4px; }
+  .icon-btn { border: none; background: none; cursor: pointer; color: #8A8570; padding: 4px 6px; border-radius: 6px; font-size: 14px; }
+  .icon-btn:hover { background: #F1EFE9; color: #1C2536; }
+  .dropzone { border: 2px dashed #D8D3C4; border-radius: 10px; padding: 22px 16px; text-align: center; color: #8A8570; font-size: 13px; background: #FAF8F3; cursor: pointer; }
+  .dropzone.drag { border-color: #B8863F; background: #FBF3E4; color: #B8863F; }
+  .contact-card { border: 1px solid #E4E0D6; border-radius: 10px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; }
+  .remove-x { position: absolute; top: 10px; right: 10px; width: 22px; height: 22px; border-radius: 50%; background: #F7EAE7; color: #B4402C; border: none; cursor: pointer; font-size: 13px; line-height: 1; }
+  .modal-tabs { display: flex; gap: 4px; border-bottom: 1px solid #E4E0D6; margin-bottom: 16px; }
+  .modal-tab { border: none; background: none; padding: 8px 12px; font-size: 13px; font-weight: 600; color: #8A8570; cursor: pointer; border-bottom: 2px solid transparent; }
+  .modal-tab.active { color: #1C2536; border-bottom: 2px solid #B8863F; }
+  .mismatch { color: #B4402C; font-weight: 700; }
+  .match { color: #2F7A4E; font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="sidebar">
+    <div class="brand"><div class="brand-mark">I</div><div class="brand-name">ICE</div></div>
+    <div class="nav-item">Szövetkezeti tagok</div>
+    <div class="nav-item">Partnerek</div>
+    <div class="nav-item active">Projektek</div>
+    <div class="nav-item">Bérszámfejtés</div>
+  </div>
+  <div class="main" id="main"></div>
+</div>
+
+<!-- Új projekt / Új alprojekt -->
+<div class="overlay" id="newProjectOverlay">
+  <div class="card modal wide">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-size:16px;font-weight:700;color:#1C2536;" id="np_title">Új projekt felvétele</div>
+      <button onclick="closeModal('newProjectOverlay')" style="background:none;border:none;cursor:pointer;color:#9A9584;font-size:18px;">×</button>
+    </div>
+    <div class="modal-tabs" id="np_subtabs" style="display:none;">
+      <button class="modal-tab active" data-mt="alap" onclick="setModalTab('alap')">Alap adatok</button>
+      <button class="modal-tab" data-mt="szerz" onclick="setModalTab('szerz')">Szerződések</button>
+      <button class="modal-tab" data-mt="kapcs" onclick="setModalTab('kapcs')">Kapcsolattartók</button>
+    </div>
+    <div id="np_pane_alap">
+      <div class="grid2" style="margin-top:6px;">
+        <label class="field"><span class="label req">Projekt megnevezése</span><input class="field-input" id="np_nev"></label>
+        <label class="field"><span class="label">Partner</span><select class="field-input" id="np_partner"></select></label>
+      </div>
+      <div class="checkbox-row" style="margin-top:12px;gap:22px;">
+        <label class="checkbox-row"><input type="checkbox" id="np_kozponti"> Központi projekttel összekapcsolható</label>
+        <label class="checkbox-row"><input type="checkbox" id="np_belso"> Belső munka</label>
+      </div>
+      <div class="grid4" style="margin-top:14px;">
+        <label class="field"><span class="label req">Ágazat</span><select class="field-input" id="np_agazat"></select></label>
+        <label class="field"><span class="label req">Kategória</span><select class="field-input" id="np_kategoria"></select></label>
+        <label class="field"><span class="label req">Vármegye</span><select class="field-input" id="np_varmegye"></select></label>
+        <label class="field"><span class="label req">Kirendeltség</span><select class="field-input" id="np_kirendeltseg"></select></label>
+      </div>
+      <div class="grid3" style="margin-top:14px;">
+        <label class="field"><span class="label">Címkék</span><input class="field-input" id="np_cimkek"></label>
+        <div class="field"><span class="label">Projekt kezdete és vége</span>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <input class="field-input" id="np_kezdete" placeholder="ÉÉÉÉ-HH-NN"><span>→</span><input class="field-input" id="np_vege" placeholder="opcionális">
+          </div>
+        </div>
+        <label class="field"><span class="label">Munkanap formátum</span><select class="field-input" id="np_munkanap"></select></label>
+      </div>
+      <div class="grid3" style="margin-top:14px;">
+        <label class="field"><span class="label req">Üzemorvosi vizsgálat figyelése</span><select class="field-input" id="np_uzemorv"></select></label>
+        <label class="field"><span class="label">Szükséges foglalkoztatás-eü. vizsgálat</span><select class="field-input" id="np_foglalk"></select></label>
+        <label class="field"><span class="label req">EÜ vizsgálatok figyelése</span><select class="field-input" id="np_euvizsg"></select></label>
+      </div>
+
+      <div class="section-head">$ Számlázás</div>
+      <div style="display:flex;gap:22px;flex-wrap:wrap;">
+        <label class="checkbox-row"><input type="checkbox" id="np_eszamla" checked> E-Számla</label>
+        <label class="checkbox-row"><input type="checkbox" id="np_szint"> Számlázási integráció</label>
+        <label class="checkbox-row"><input type="checkbox" id="np_auto" disabled> Automatikus számlázás</label>
+        <label class="checkbox-row"><input type="checkbox" id="np_piszkozat"> Piszkozat teljig számlázásba küldése</label>
+        <label class="checkbox-row"><input type="checkbox" id="np_mellek"> Számla melléklet küldése</label>
+      </div>
+      <div class="grid3" style="margin-top:14px;">
+        <label class="field"><span class="label req">Fizetési határidő</span><select class="field-input" id="np_hatarido"></select></label>
+        <label class="field"><span class="label">ÁFA bevallás jellege</span><select class="field-input" id="np_afabev"></select></label>
+        <label class="field"><span class="label req">Fizetési kondíció</span><select class="field-input" id="np_kondicio"></select></label>
+      </div>
+      <div class="grid4" style="margin-top:14px;">
+        <label class="field"><span class="label req">ÁFA</span><select class="field-input" id="np_afa"></select></label>
+        <label class="field"><span class="label">Tartozik</span><select class="field-input" id="np_tartozik"><option>.: Kérlek válassz :.</option></select></label>
+        <label class="field"><span class="label">Követel</span><select class="field-input" id="np_kovetel"><option>.: Kérlek válassz :.</option></select></label>
+        <label class="field"><span class="label">Munkaszám</span><select class="field-input" id="np_munkaszam"><option>.: Kérlek válassz :.</option></select></label>
+      </div>
+      <div class="grid2" style="margin-top:14px;">
+        <label class="field"><span class="label">Költséghely</span><select class="field-input" id="np_koltseghely"><option>.: Kérlek válassz :.</option></select></label>
+        <label class="field"><span class="label">Munka megnevezés</span><input class="field-input" id="np_munkamegnevezes"></label>
+      </div>
+      <div class="grid2" style="margin-top:14px;">
+        <label class="field"><span class="label">Fix számla megjegyzés</span><textarea class="field-input" id="np_fixmegjegyzes" rows="2"></textarea></label>
+        <label class="field"><span class="label">Számlázással kapcsolatos egyéb információk</span><textarea class="field-input" id="np_szegyeb" rows="2"></textarea></label>
+      </div>
+      <div class="grid3" style="margin-top:18px;">
+        <label class="field"><span class="label req">Nemzetgazdasági ágazat</span><select class="field-input" id="np_nemzgazd"></select></label>
+        <label class="field"><span class="label">Státusz</span><select class="field-input" id="np_statusz"><option>Aktív</option><option>Inaktív</option></select></label>
+        <label class="checkbox-row" style="align-self:end;padding-bottom:8px;"><input type="checkbox" id="np_valtozo"> Változó munkahely</label>
+      </div>
+      <div style="margin-top:18px;display:flex;justify-content:space-between;align-items:center;">
+        <span class="label" style="margin:0;">Munkavégzési helyek</span><button class="btn-ghost sm" onclick="addWorkplace()">+</button>
+      </div>
+      <div id="np_workplaces" style="margin-top:8px;"></div>
+      <div class="grid2" style="margin-top:8px;">
+        <label class="field"><span class="label req">Leírás</span><textarea class="field-input" id="np_leiras" rows="2"></textarea></label>
+        <label class="field"><span class="label">Ellátandó feladatok megnevezése</span><textarea class="field-input" id="np_feladatok" rows="2"></textarea></label>
+      </div>
+      <label class="field" style="margin-top:14px;"><span class="label">Megjegyzés</span><textarea class="field-input" id="np_megjegyzes" rows="2"></textarea></label>
+      <div class="section-head">$ Partner logó</div>
+      <div style="color:#B4791F;font-size:13px;">Jelenleg nincsen feltöltve partner logó!</div>
+    </div>
+    <div id="np_pane_szerz" style="display:none;color:#8A8570;font-size:13.5px;padding:20px 0;">A projekt szerződéseit a mentés után, a <b>Szerződések</b> fülön tudod hozzárendelni.</div>
+    <div id="np_pane_kapcs" style="display:none;color:#8A8570;font-size:13.5px;padding:20px 0;">A kapcsolattartókat a mentés után, a <b>Kapcsolattartók</b> fülön tudod felvenni.</div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:22px;border-top:1px solid #E4E0D6;padding-top:16px;">
+      <button class="btn-ghost" onclick="closeModal('newProjectOverlay')">Mégse</button>
+      <button class="btn-primary" onclick="createProject()">💾 Mentés</button>
+    </div>
+  </div>
+</div>
+
+<!-- Új kapcsolattartó -->
+<div class="overlay" id="newContactOverlay">
+  <div class="card modal" style="width:400px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-size:16px;font-weight:700;color:#1C2536;">Új kapcsolattartó</div>
+      <button onclick="closeModal('newContactOverlay')" style="background:none;border:none;cursor:pointer;color:#9A9584;font-size:18px;">×</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-top:16px;">
+      <input class="field-input" id="nk_nev" placeholder="Név *">
+      <input class="field-input" id="nk_email" placeholder="E-mail *">
+      <input class="field-input" id="nk_mobil" placeholder="Mobil szám">
+      <input class="field-input" id="nk_vezetekes" placeholder="Vezetékes szám">
+      <label class="checkbox-row"><input type="checkbox" id="nk_szamlazasi"> Számlázási kapcsolattartó</label>
+      <label class="label">Beosztáskezelő hozzáférés
+        <select class="field-input" id="nk_hozzaferes" style="margin-top:4px;">
+          <option value="nincs">Nincs hozzáférés</option><option value="olvasas">Olvasási jog</option><option value="iras">Írási jog</option>
+        </select>
+      </label>
+      <label class="label">Megjegyzés<textarea class="field-input" id="nk_megjegyzes" rows="2" style="margin-top:4px;"></textarea></label>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:18px;">
+      <button class="btn-ghost" onclick="closeModal('newContactOverlay')">Mégse</button>
+      <button class="btn-primary" onclick="createContact()">Hozzáadás</button>
+    </div>
+  </div>
+</div>
+
+<!-- Szereplők hozzáadása -->
+<div class="overlay" id="newSzereploOverlay">
+  <div class="card modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-size:16px;font-weight:700;color:#1C2536;">Szereplők hozzáadása</div>
+      <button onclick="closeModal('newSzereploOverlay')" style="background:none;border:none;cursor:pointer;color:#9A9584;font-size:18px;">×</button>
+    </div>
+    <div id="sz_rows" style="margin-top:14px;"></div>
+    <button class="btn-ghost sm" onclick="addSzereploRow()">+ Sor hozzáadása</button>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:18px;">
+      <button class="btn-ghost" onclick="closeModal('newSzereploOverlay')">Mégse</button>
+      <button class="btn-primary" onclick="createSzereplok()">Mentés</button>
+    </div>
+  </div>
+</div>
+
+<!-- Vállalási díj -->
+<div class="overlay" id="newDijOverlay">
+  <div class="card modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-size:16px;font-weight:700;color:#1C2536;">Vállalási díjak hozzáadása</div>
+      <button onclick="closeModal('newDijOverlay')" style="background:none;border:none;cursor:pointer;color:#9A9584;font-size:18px;">×</button>
+    </div>
+    <div class="grid2" style="margin-top:14px;">
+      <label class="field"><span class="label req">Megnevezés</span><input class="field-input" id="dj_nev"></label>
+      <label class="field"><span class="label req">Egységár</span><input class="field-input" id="dj_ar" placeholder="pl. 2 200"></label>
+    </div>
+    <div class="grid2" style="margin-top:10px;">
+      <label class="field"><span class="label req">Egység típus</span><select class="field-input" id="dj_egysegtipus"></select></label>
+      <label class="field"><span class="label req">Típus</span><select class="field-input" id="dj_tipus"><option>Szervezős</option><option>Átfuttatás</option></select></label>
+    </div>
+    <div class="field" style="margin-top:10px;"><span class="label req">Érvényesség kezdete és vége</span>
+      <div style="display:flex;gap:6px;align-items:center;"><input class="field-input" id="dj_kezdete" placeholder="ÉÉÉÉ.hh"><span>→</span><input class="field-input" id="dj_vege" placeholder="ÉÉÉÉ.hh"></div>
+    </div>
+    <div class="section-head">$ Számlázás</div>
+    <div class="grid4">
+      <label class="field"><span class="label req">ÁFA</span><select class="field-input" id="dj_afa"></select></label>
+      <label class="field"><span class="label">Tartozik</span><select class="field-input" id="dj_tartozik"><option>.: Kérlek válassz :.</option></select></label>
+      <label class="field"><span class="label">Munkaszám</span><select class="field-input" id="dj_munkaszam"><option>.: Kérlek válassz :.</option></select></label>
+      <label class="field"><span class="label">Költséghely</span><select class="field-input" id="dj_koltseghely"><option>.: Kérlek válassz :.</option></select></label>
+    </div>
+    <div class="section-head">Pótlékok</div>
+    <div class="checkbox-row" style="gap:18px;margin-bottom:10px;">
+      <label class="checkbox-row"><input type="radio" name="dj_potlekmod" value="egyeni" checked> Egyéni összeg</label>
+      <label class="checkbox-row"><input type="radio" name="dj_potlekmod" value="szazalek"> Százalék alapú</label>
+    </div>
+    <div class="grid2" id="dj_periods"></div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:20px;">
+      <button class="btn-ghost" onclick="closeModal('newDijOverlay')">Mégse</button>
+      <button class="btn-primary" onclick="createDij()">Mentés</button>
+    </div>
+  </div>
+</div>
+
+<!-- Számfejtési bér -->
+<div class="overlay" id="newSzfOverlay">
+  <div class="card modal wide">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-size:16px;font-weight:700;color:#1C2536;">Számfejtési bérek hozzáadása</div>
+      <button onclick="closeModal('newSzfOverlay')" style="background:none;border:none;cursor:pointer;color:#9A9584;font-size:18px;">×</button>
+    </div>
+    <div class="grid3" style="margin-top:14px;">
+      <label class="field"><span class="label req">Megnevezés</span><input class="field-input" id="szf_nev"></label>
+      <label class="field"><span class="label req">Egységár</span><input class="field-input" id="szf_ar"></label>
+      <label class="field"><span class="label req">Egység típus</span><select class="field-input" id="szf_egysegtipus"></select></label>
+    </div>
+    <div class="grid3" style="margin-top:10px;">
+      <div class="field"><span class="label req">Érvényesség kezdete és vége</span>
+        <div style="display:flex;gap:6px;align-items:center;"><input class="field-input" id="szf_kezdete" placeholder="ÉÉÉÉ.hh"><span>→</span><input class="field-input" id="szf_vege" placeholder="ÉÉÉÉ.hh"></div>
+      </div>
+      <label class="field"><span class="label">Norma óra</span><input class="field-input" id="szf_normaora" placeholder="opcionális"></label>
+      <label class="field"><span class="label req">Vállalási díj <span style="color:#1C4E7A;font-weight:400;">(a kiszámlázott díj, amihez ez a bér kapcsolódik)</span></span><select class="field-input" id="szf_vallalasi_dij"></select></label>
+    </div>
+    <label class="field" style="margin-top:10px;"><span class="label req">Munkakör</span><select class="field-input" id="szf_munkakor"></select></label>
+
+    <div class="section-head">Pótlékok</div>
+    <div class="checkbox-row" style="gap:18px;margin-bottom:4px;">
+      <label class="checkbox-row"><input type="radio" name="szf_potlekmod" value="egyeni" checked> Egyéni összeg</label>
+      <label class="checkbox-row"><input type="radio" name="szf_potlekmod" value="szazalek"> Százalék alapú</label>
+      <label class="checkbox-row" style="margin-left:auto;"><input type="checkbox" id="szf_jovairas"> Pótlék jóváírás (min. 1 óra felett)</label>
+    </div>
+    <div class="grid2" id="szf_periods"></div>
+
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:20px;">
+      <button class="btn-ghost" onclick="closeModal('newSzfOverlay')">Mégse</button>
+      <button class="btn-primary" onclick="createSzf()">Mentés</button>
+    </div>
+  </div>
+</div>
+
+<!-- Költség -->
+<div class="overlay" id="newKoltsegOverlay">
+  <div class="card modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-size:16px;font-weight:700;color:#1C2536;">Költségek hozzáadása</div>
+      <button onclick="closeModal('newKoltsegOverlay')" style="background:none;border:none;cursor:pointer;color:#9A9584;font-size:18px;">×</button>
+    </div>
+    <label class="checkbox-row" style="margin-top:14px;"><input type="checkbox" id="ko_szamlazando"> Számlázandó?</label>
+    <div class="grid2" style="margin-top:10px;">
+      <label class="field"><span class="label req">Összeg</span><input class="field-input" id="ko_osszeg" placeholder="Ft"></label>
+      <label class="field"><span class="label req">Típus</span><select class="field-input" id="ko_tipus"></select></label>
+    </div>
+    <div class="grid2" style="margin-top:10px;">
+      <label class="field"><span class="label req">Költség dátuma</span><input class="field-input" id="ko_datum" placeholder="ÉÉÉÉ-HH-NN"></label>
+      <label class="field"><span class="label req">Elszámolási időszak</span><input class="field-input" id="ko_idoszak" placeholder="ÉÉÉÉ-HH"></label>
+    </div>
+    <label class="field" style="margin-top:10px;"><span class="label req">Megnevezés</span><input class="field-input" id="ko_nev"></label>
+    <div class="section-head">$ Számlázás</div>
+    <div class="grid4">
+      <label class="field"><span class="label">ÁFA</span><select class="field-input" id="ko_afa"></select></label>
+      <label class="field"><span class="label">Tartozik</span><select class="field-input" id="ko_tartozik"><option>.: Kérlek válassz :.</option></select></label>
+      <label class="field"><span class="label">Munkaszám</span><select class="field-input" id="ko_munkaszam"><option>.: Kérlek válassz :.</option></select></label>
+      <label class="field"><span class="label">Költséghely</span><select class="field-input" id="ko_koltseghely"><option>.: Kérlek válassz :.</option></select></label>
+    </div>
+    <label class="checkbox-row" style="margin-top:12px;"><input type="checkbox" id="ko_kozvetitett"> Közvetített szolgáltatás?</label>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:20px;">
+      <button class="btn-ghost" onclick="closeModal('newKoltsegOverlay')">Mégse</button>
+      <button class="btn-primary" onclick="createKoltseg()">Mentés</button>
+    </div>
+  </div>
+</div>
+
+<!-- Új szerződés -->
+<div class="overlay" id="newSzerzodesOverlay">
+  <div class="card modal">
+    <div class="modal-tabs">
+      <button class="modal-tab active" data-st="adatai" onclick="setSzerzTab('adatai')">Szerződés adatai</button>
+      <button class="modal-tab" data-st="dok" onclick="setSzerzTab('dok')">Dokumentumok</button>
+    </div>
+    <div id="szerz_pane_adatai">
+      <div class="field"><span class="label">Partner</span><div style="font-size:14px;font-weight:600;" id="szerz_partner_display"></div></div>
+      <div class="grid3" style="margin-top:12px;">
+        <label class="field"><span class="label req">Szerződés kelte</span><input class="field-input" id="sze_kelte" placeholder="ÉÉÉÉ-HH-NN"></label>
+        <label class="field"><span class="label req">Érvényesség kezdete</span><input class="field-input" id="sze_erv_kezdete" placeholder="ÉÉÉÉ-HH-NN"></label>
+        <label class="field"><span class="label">Érvényesség vége</span><input class="field-input" id="sze_erv_vege" placeholder="opcionális"></label>
+      </div>
+      <div class="modal-tabs" style="margin-top:16px;">
+        <button class="modal-tab active" data-ct="szamlazasi" onclick="setCimTab('szamlazasi')">💳 Számlázási cím</button>
+        <button class="modal-tab" data-ct="levelezesi" onclick="setCimTab('levelezesi')">✉ Levelezési cím</button>
+      </div>
+      <div id="cim_pane_szamlazasi" class="grid2">
+        <label class="field"><span class="label req">Ir.szám</span><input class="field-input" id="sze_sz_irszam"></label>
+        <label class="field"><span class="label req">Város</span><input class="field-input" id="sze_sz_varos"></label>
+        <label class="field" style="grid-column:1/-1;"><span class="label req">Utca, Hsz.</span><input class="field-input" id="sze_sz_utca"></label>
+        <label class="field"><span class="label">Postafiók</span><input class="field-input" id="sze_sz_postafiok"></label>
+      </div>
+      <div id="cim_pane_levelezesi" class="grid2" style="display:none;">
+        <label class="field"><span class="label">Ir.szám</span><input class="field-input" id="sze_le_irszam"></label>
+        <label class="field"><span class="label">Város</span><input class="field-input" id="sze_le_varos"></label>
+        <label class="field" style="grid-column:1/-1;"><span class="label">Utca, Hsz.</span><input class="field-input" id="sze_le_utca"></label>
+      </div>
+      <label class="field" style="margin-top:14px;"><span class="label">Megjegyzés</span><textarea class="field-input" id="sze_megjegyzes" rows="2"></textarea></label>
+    </div>
+    <div id="szerz_pane_dok" style="display:none;color:#8A8570;font-size:13.5px;padding:16px 0;">A szerződés mentése után itt tölthetők fel a kapcsolódó dokumentumok.</div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:20px;">
+      <button class="btn-ghost" onclick="closeModal('newSzerzodesOverlay')">Mégse</button>
+      <button class="btn-primary" onclick="createSzerzodes()">💾 Mentés</button>
+    </div>
+  </div>
+</div>
+
+<!-- Teljig szerkesztése -->
+<div class="overlay" id="teljigOverlay">
+  <div class="card modal xwide" id="teljig_content"></div>
+</div>
+
+<!-- Generikus (Kifizetés batch) -->
+<div class="overlay" id="genericOverlay">
+  <div class="card modal" style="width:400px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-size:16px;font-weight:700;color:#1C2536;" id="gf_title">Új tétel</div>
+      <button onclick="closeModal('genericOverlay')" style="background:none;border:none;cursor:pointer;color:#9A9584;font-size:18px;">×</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-top:16px;" id="genericFields"></div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:18px;">
+      <button class="btn-ghost" onclick="closeModal('genericOverlay')">Mégse</button>
+      <button class="btn-primary" onclick="createGenericItem()">Mentés</button>
+    </div>
+  </div>
+</div>
+
+<!-- Dokumentum feltöltés -->
+<div class="overlay" id="uploadOverlay">
+  <div class="card modal" style="width:440px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-size:16px;font-weight:700;color:#1C2536;">Projekt dokumentum feltöltése</div>
+      <button onclick="closeModal('uploadOverlay')" style="background:none;border:none;cursor:pointer;color:#9A9584;font-size:18px;">×</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-top:14px;">
+      <label class="label">Dokumentum típusa
+        <select class="field-input" id="up_tipus" style="margin-top:4px;">
+          <option>Egyéb projekt dokumentum</option><option>Jelenléti ív</option><option>Összesítő</option><option>Átvételi</option>
+        </select>
+      </label>
+      <label class="label">Időszak<br><input class="field-input" id="up_idoszak" placeholder="ÉÉÉÉ.HH" style="margin-top:4px;"></label>
+      <label class="label">Megjegyzés<br><input class="field-input" id="up_megjegyzes" style="margin-top:4px;"></label>
+    </div>
+    <div class="dropzone" id="dropzone" style="margin-top:14px;" onclick="document.getElementById('fileInput').click()">
+      <div style="font-size:22px;margin-bottom:6px;">⇪</div>Húzd ide a fájlt, vagy kattints a tallózáshoz
+      <input type="file" id="fileInput" style="display:none;">
+    </div>
+    <div id="fileNamePreview" style="font-size:13px;color:#3A3A2E;margin-top:10px;"></div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px;">
+      <button class="btn-ghost" onclick="closeModal('uploadOverlay')">Mégse</button>
+      <button class="btn-primary" id="upConfirmBtn" onclick="confirmUpload()" disabled style="opacity:.5;">Feltöltés véglegesítése</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const OFFICES = ["Budapest","Debrecen","Szeged","Pécs","Győr"];
+const PARTNER_NAMES = ["Tesco-Global Zrt.","Auchan Retail Magyarország Kft.","DM Kereskedelmi Kft.","IKEA Lakberendezési Kft.","Praktiker Kft.","— nincs (belső munka) —"];
+const AGAZATOK = ["Fizikai ágazat","Szellemi ágazat","Digitális ágazat"];
+const KATEGORIAK = ["Könnyű fizikai, gyári, raktári","Nehéz fizikai, épitőipari","Vendéglátás, kiszolgálás","Adminisztratív, ügyfélszolgálati","IT, digitális"];
+const VARMEGYEK = ["Pest","Bács-Kiskun","Csongrád-Csanád","Hajdú-Bihar","Győr-Moson-Sopron","Baranya"];
+const KIRENDELTSEGEK = ["Meló-Diák Universitas Budapest","Meló-Diák Universitas Debrecen","Meló-Diák Universitas Szeged","Meló-Diák Universitas Győr","Meló-Diák Universitas Pécs"];
+const MUNKANAP_FORMATUMOK = ["06:00 - 06:00","00:00 - 24:00","04:00 - 04:00"];
+const UZEMORVOSI_OPTS = ["Figyelmeztet, ha lejárt","Nem figyeli","Blokkolja a beosztást, ha lejárt"];
+const FOGLALK_OPTS = ["Kattints ide a választáshoz","Nem szükséges","Kötelező minden diáknak","Csak 18 év alattiaknak"];
+const EU_VIZSGALAT_OPTS = ["Figyelmeztet, ha lejárt, vagy hiányzik","Nem figyeli","Blokkolja a beosztást"];
+const NEMZETGAZDASAGI_AGAZATOK = ["Kereskedelem","Vendéglátás/Idegenforgalom","Szállítás, raktározás","Gyártás, ipar","Adminisztráció"];
+const FIZETESI_HATARIDOK = ["8 nap","15 nap","30 nap"];
+const AFA_BEVALLAS_OPTS = ["Folyamatos","Egyszeri"];
+const FIZETESI_KONDICIOK = [".: Kérlek válassz :.","Elszámolási időszak utolsó napja","Számla kiállítás napja","Tárgyhó utolsó napja","Tárgyhót követő 2. hónap utolsó napja","Tárgyhót követő 1. hónap utolsó napja"];
+const AFA_OPTS = [".: Kérlek válassz :.","27% (27%)","18% (18%)","5% (5%)","Alanyi Adómentes (AM) (0%)","Tárgyi Adómentes (TM) (0%)","Áfa körön kívüli (AKK) (0%)"];
+const SZEREPKOROK = ["Igazgatósági tag","Megye vezető","Irodavezető","Ágazatvezető","Managing Partner","Piackutató","Témavezető / Mentor"];
+const SZEREPLO_TIPUSOK = ["Fedezet arányos","Egyösszegű"];
+const EGYSEG_TIPUSOK = ["Ft/óra","Ft/nap","Ft/hónap","Ft/db","Ft/fő","Ft/alkalom","Egyösszegű"];
+const KOLTSEG_TIPUSOK = ["Eszköz","Adminisztráció","Marketing","Utazás","Egyéb"];
+const MUNKAKOROK = ["Pénztáros","Árufeltöltő","Komissiózó","Vevőszolgálat","Betanított fizikai munkás"];
+const PERIODS = [["delelott","Délelőtt","06:00","14:00"],["delutan","Délután","14:00","22:00"],["ejszaka","Éjszaka","22:00","06:00"],["muszakpotlek","Műszakpótlék","18:00","06:00"],["munkaszuneti","Munkaszüneti nap",null,null],["hetvege_szombat","Hétvége (szombat)",null,null],["hetvege_vasarnap","Hétvége (vasárnap)",null,null],["pihenonapi","Pihenőnapi pótlék",null,null]];
+const KIFIZETES_STATUSOK = ["Beküldött","Jóváhagyott","Számfejtett","Korrekció Beküldött","Korrekció Jóváhagyott","Korrekció Számfejtett"];
+
+function fillSelect(id, options, placeholder){
+  const el = document.getElementById(id);
+  el.innerHTML = (placeholder ? `<option>${placeholder}</option>` : "") + options.map(o=>`<option>${o}</option>`).join("");
+}
+function periodBoxesHtml(prefix){
+  return PERIODS.map(([key,label,tol,ig])=>`
+    <div class="subcard" style="margin-bottom:0;">
+      <div style="font-weight:600;font-size:12.5px;margin-bottom:8px;">${label}</div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <input class="field-input" id="${prefix}_${key}_szazalek" placeholder="Százalék" style="width:90px;">
+        ${tol!==null ? `<input class="field-input" id="${prefix}_${key}_tol" value="${tol}" style="width:64px;"><span>→</span><input class="field-input" id="${prefix}_${key}_ig" value="${ig}" style="width:64px;">` : ""}
+      </div>
+    </div>`).join("");
+}
+
+let projects = [
+ {id:1, azonosito:"#9612", nev:"Budaörsi áruház — nyári diákmunka", partner:"Tesco-Global Zrt.", iroda:"Meló-Diák Universitas Budapest", statusz:"aktív", prioritas:"Elsődleges", belso_munka:false, letrehozva:"2026.03.02",
+  meta:{ kozponti:false, agazat:"Fizikai ágazat", kategoria:"Könnyű fizikai, gyári, raktári", varmegye:"Pest", cimkek:"nyári, kiskereskedelem", kezdete:"2026-06-01", vege:"", munkanap:"06:00 - 06:00",
+    uzemorv:"Figyelmeztet, ha lejárt", foglalk:".: Kérlek válassz :.", euvizsg:"Figyelmeztet, ha lejárt, vagy hiányzik",
+    eszamla:true, szint:false, auto:false, piszkozat:false, mellek:false, hatarido:"8 nap", afabev:"Folyamatos", kondicio:"Számla kiállítás napja",
+    afa:"27% (27%)", munkamegnevezes:"", fixmegjegyzes:"", szegyeb:"", nemzgazd:"Kereskedelem", valtozo:false,
+    leiras:"Könnyű fizikai betanított munka, pénztári és árufeltöltési feladatok ellátása.", feladatok:"", megjegyzes:"" },
+  munkavegzesi_helyek:[{id:1, irszam:"2040", varos:"Budaörs", utca:"Kinizsi út 1-3."}],
+  kapcsolattartok:[
+    {id:1, nev:"Simon Gábor", email:"simon.gabor@tesco.hu", mobil:"+36 20 111 4455", vezetekes:"", szamlazasi:true, hozzaferes:"nincs", megjegyzes:""},
+    {id:2, nev:"Balogh Réka", email:"balogh.reka@tesco.hu", mobil:"+36 30 900 1122", vezetekes:"", szamlazasi:false, hozzaferes:"iras", megjegyzes:""}
+  ],
+  szereplok:[
+    {id:1, nev:"Kiss Péter", email:"kis.peter@melodiak.hu", szerepkor:"Managing Partner", erv_kezdete:"2026-06", erv_vege:"", tipus:"Fedezet arányos", osszeg:0, min_osszeg:0, reszesedes:5, kompenzacio:"—"},
+    {id:2, nev:"Edőcs Ádám", email:"edocs.adam@melodiak.hu", szerepkor:"Témavezető / Mentor", erv_kezdete:"2026-06", erv_vege:"", tipus:"Fedezet arányos", osszeg:0, min_osszeg:4000, reszesedes:13, kompenzacio:"—"}
+  ],
+  dijak:[{id:1, nev:"könnyű fizikai betanított munka, fagyizóban kisegítő feladatok ellátása", ar:"2 400", egysegtipus:"Ft/óra", tipus:"Szervezős", ervenyesseg:"2026.01–2026.12"}],
+  szamfejtesi_berek:[{id:1, nev:"könnyű fizikai betanított munka, fagyizóban kisegítő feladatok ellátása", ar:"2 000", egysegtipus:"Ft/óra", normaora:"", munkakor:"Pénztáros", vallalasi_dij_id:1, ervenyesseg:"2026.01–2026.12"}],
+  koltsegek:[{id:1, nev:"Munkaruha beszerzés", osszeg:"180 000", datum:"2026.05.15", idoszak:"2026-05", tipus:"Eszköz", szamlazando:false}],
+  eseti_settings:{ sablon:"", digitalis_sablon:"", eseti_munkahely:"", kiegeszites:["","","","",""] },
+  szerzodesek:[{id:1, azonosito:"34556", kelte:"2026-06-23", erv_kezdete:"2026-06-23", erv_vege:"", statusz:"aktív",
+    szamlazasi_cim:{irszam:"2051", varos:"Biatorbágy", utca:"Rózália park CTPark Budapest West. BIA24. ép.", postafiok:""},
+    levelezesi_cim:{irszam:"", varos:"", utca:""}, megjegyzes:"", dokumentumok:[{nev:"Front Line Magyarország Kft 20260623.pdf"},{nev:"Front Line Magyarország Élelmiszerkereskedelmi Kft-DUNS488080636.pdf"}]}],
+  kifizetesek:[{id:1, temavezeto:"Edőcs Ádám", szf_idoszak:"2026-06", teljesitesi_idoszak:"2026-06", diakok:1, osszesen:"58 000", megjegyzes:"", letrehozva:"2026-07-01", statusz:"Beküldött"}],
+  teljesitesek:[{id:1, azonosito:"B0471500-200699", idoszak:"2026-06", statusz:"Jóváhagyott", teljig_datuma:"2026-07-01",
+    szl_idoszak_kezdete:"2026-06-01", szl_idoszak_vege:"2026-06-30", szl_po:"", csoportositas:false, megjegyzes:"",
+    sorok:[{id:1, dij_id:1, menny:29, elsz_menny:29, kozvetitett:true}],
+    koltseg_sorok:[], dokumentumok:[]}],
+  dokumentumok:[
+    {id:1, nev:"Front Line Magyarország Kft 20260623.pdf", tipus:"Szerződés", idoszak:"2026-06", feltolto:"Öcsödy Zsuzsanna #520228", meret:"1.24 MB", feltoltve:"2026-06-24 10:18:04", statusz:"Feltöltve", megjegyzes:""},
+    {id:2, nev:"Front Line Magyarország Élelmiszerkereskedelmi Kft-DUNS488080636.pdf", tipus:"Szerződés", idoszak:"2026-06", feltolto:"Öcsödy Zsuzsanna #520228", meret:"475.21 KB", feltoltve:"2026-06-24 10:17:55", statusz:"Feltöltve", megjegyzes:""}
+  ]},
+ {id:2, azonosito:"#9450", nev:"Soroksári logisztikai raktár", partner:"Auchan Retail Magyarország Kft.", iroda:"Meló-Diák Universitas Budapest", statusz:"aktív", prioritas:"Másodlagos", belso_munka:false, letrehozva:"2025.11.18",
+  meta:{ kozponti:false, agazat:"Fizikai ágazat", kategoria:"Könnyű fizikai, gyári, raktári", varmegye:"Pest", cimkek:"", kezdete:"2025-12-01", vege:"", munkanap:"06:00 - 06:00",
+    uzemorv:"Figyelmeztet, ha lejárt", foglalk:".: Kérlek válassz :.", euvizsg:"Figyelmeztet, ha lejárt, vagy hiányzik",
+    eszamla:true, szint:false, auto:false, piszkozat:false, mellek:false, hatarido:"15 nap", afabev:"Folyamatos", kondicio:"Számla kiállítás napja",
+    afa:"27% (27%)", munkamegnevezes:"", fixmegjegyzes:"", szegyeb:"", nemzgazd:"Szállítás, raktározás", valtozo:false,
+    leiras:"Árufeltöltés és komissiózás logisztikai raktárban.", feladatok:"", megjegyzes:"" },
+  munkavegzesi_helyek:[{id:2, irszam:"1239", varos:"Budapest", utca:"Nagykőrösi út 351."}],
+  kapcsolattartok:[{id:3, nev:"Kelemen Zsolt", email:"kelemen.zsolt@auchan.hu", mobil:"+36 20 456 7788", vezetekes:"+36 1 555 0102", szamlazasi:true, hozzaferes:"olvasas", megjegyzes:""}],
+  szereplok:[], dijak:[{id:2, nev:"Alapbér — árufeltöltő", ar:"2 100", egysegtipus:"Ft/óra", tipus:"Átfuttatás", ervenyesseg:"2025.11–2026.11"}],
+  szamfejtesi_berek:[], koltsegek:[], eseti_settings:{ sablon:"", digitalis_sablon:"", eseti_munkahely:"", kiegeszites:["","","","",""] },
+  szerzodesek:[], kifizetesek:[], teljesitesek:[], dokumentumok:[]},
+ {id:3, azonosito:"#9781", nev:"Törökbálinti központi raktár", partner:"DM Kereskedelmi Kft.", iroda:"Meló-Diák Universitas Budapest", statusz:"aktív", prioritas:"Elsődleges", belso_munka:false, letrehozva:"2026.01.09",
+  meta:{ kozponti:false, agazat:"Fizikai ágazat", kategoria:"Könnyű fizikai, gyári, raktári", varmegye:"Pest", cimkek:"", kezdete:"2026-02-01", vege:"", munkanap:"06:00 - 06:00",
+    uzemorv:"Figyelmeztet, ha lejárt", foglalk:".: Kérlek válassz :.", euvizsg:"Figyelmeztet, ha lejárt, vagy hiányzik",
+    eszamla:true, szint:false, auto:false, piszkozat:false, mellek:false, hatarido:"8 nap", afabev:"Folyamatos", kondicio:"Számla kiállítás napja",
+    afa:"27% (27%)", munkamegnevezes:"", fixmegjegyzes:"", szegyeb:"", nemzgazd:"Kereskedelem", valtozo:false, leiras:"Komissiózás.", feladatok:"", megjegyzes:"" },
+  munkavegzesi_helyek:[{id:3, irszam:"2045", varos:"Törökbálint", utca:"Torbágy u. 22."}],
+  kapcsolattartok:[
+    {id:4, nev:"Farkas Nóra", email:"farkas.nora@dm.hu", mobil:"+36 70 234 5566", vezetekes:"", szamlazasi:false, hozzaferes:"olvasas", megjegyzes:""},
+    {id:5, nev:"Papp Ildikó", email:"papp.ildiko@dm.hu", mobil:"+36 20 888 3344", vezetekes:"", szamlazasi:true, hozzaferes:"olvasas", megjegyzes:"Csak számlázási ügyekben."}
+  ],
+  szereplok:[], dijak:[], szamfejtesi_berek:[], koltsegek:[], eseti_settings:{ sablon:"", digitalis_sablon:"", eseti_munkahely:"", kiegeszites:["","","","",""] },
+  szerzodesek:[], kifizetesek:[], teljesitesek:[], dokumentumok:[]}
+];
+
+let selectedId = null;
+let profileTab = "alap";
+let actionsOpen = false;
+let genericContext = null;
+let pendingFileName = null;
+let modalTab = "alap";
+let szereploRows = [];
+let dijSegment = "vallalasi";
+let dokChecked = new Set();
+let szerzTab = "adatai";
+let cimTab = "szamlazasi";
+
+const GENERIC_CONFIG = {
+  eseti_szerzodesek: { title:"Új eseti szerződés", fields:[["cim","Megnevezés"],["kezdete","Kezdete (ÉÉÉÉ.HH.NN)"],["vege","Vége (ÉÉÉÉ.HH.NN)"]] }
+};
+
+function esc(s){ return (s===null||s===undefined) ? "" : String(s); }
+function showToast(text){
+  const t = document.getElementById("toast");
+  t.innerHTML = "✓ " + text;
+  t.classList.add("show");
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => t.classList.remove("show"), 2600);
+}
+function render(){
+  const main = document.getElementById("main");
+  main.innerHTML = selectedId ? renderProjectProfile() : renderProjectList();
+  wireEvents();
+}
+
+function renderProjectList(){
+  const q = (document.getElementById("_q")?.value || "").toLowerCase();
+  const statusF = document.getElementById("_status")?.value || "mind";
+  const belsoF = document.getElementById("_belso")?.value || "mind";
+  const filtered = projects.filter(p=>{
+    if (statusF !== "mind" && p.statusz !== statusF) return false;
+    if (belsoF === "belso" && !p.belso_munka) return false;
+    if (belsoF === "kulso" && p.belso_munka) return false;
+    if (q && !p.nev.toLowerCase().includes(q) && !p.azonosito.includes(q) && !p.partner.toLowerCase().includes(q)) return false;
+    return true;
+  });
+  const rows = filtered.map(p => `<tr class="row" data-id="${p.id}">
+    <td style="font-family:monospace;color:#8A8570;">${esc(p.azonosito)}</td>
+    <td style="font-weight:600;color:#1C2536;">${esc(p.nev)}${p.belso_munka ? ` <span class="badge" style="background:#F1EFE9;color:#7A7460;">belső</span>` : ""}</td>
+    <td>${esc(p.partner)}</td><td>${esc(p.iroda)}</td>
+    <td><span class="badge status-${p.prioritas}">${p.prioritas}</span></td>
+    <td><span class="badge status-${p.statusz}"><span class="dot" style="background:currentColor;"></span>${p.statusz}</span></td>
+    <td style="text-align:right;color:#B0AB98;">›</td>
+  </tr>`).join("");
+  return `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">
+      <div><div style="font-size:20px;font-weight:700;color:#1C2536;">Projektek</div>
+        <div style="font-size:13px;color:#8A8570;margin-top:2px;">${filtered.length} projekt a szűrésnek megfelelően · ${projects.length} összesen</div></div>
+      <div style="display:flex;gap:8px;align-items:center;position:relative;">
+        <button class="btn-ghost" id="actionsBtn">Műveletek ▾</button>
+        <div class="action-menu ${actionsOpen?'open':''}" id="actionsMenu" style="width:250px;">
+          <button class="action-item" onclick="showToast('Kijelölt projektek szereplőinek lezárása.')">⊘ Szereplők lezárása</button>
+          <button class="action-item" onclick="showToast('Főkönyvi egyenleg feltöltése — válassz fájlt.')">⬆ Főkönyvi egyenleg feltöltése</button>
+          <button class="action-item" onclick="showToast('Tömeges szinkronizálás elindítva.')">↻ Tömeges szinkronizálás</button>
+          <div class="sep"></div>
+          <button class="action-item" onclick="exportAction('Projekt lista export')">⬇ Projekt lista export</button>
+          <button class="action-item" onclick="exportAction('Teljesítés összesítő export')">⬇ Teljesítés összesítő export</button>
+        </div>
+        <button class="btn-primary" onclick="openNewProjectModal(false)">+ Új főprojekt</button>
+      </div>
+    </div>
+    <div class="card" style="margin-top:18px;padding:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+      <input class="field-input" id="_q" placeholder="Keresés azonosító, megnevezés vagy partner alapján…" style="flex:1 1 240px;">
+      <select class="field-input" id="_status" style="width:auto;"><option value="mind">Minden státusz</option><option value="aktív">aktív</option><option value="inaktív">inaktív</option></select>
+      <select class="field-input" id="_belso" style="width:auto;"><option value="mind">Minden projekt</option><option value="kulso">Csak külsős</option><option value="belso">Csak belsős</option></select>
+    </div>
+    <div class="card" style="margin-top:14px;overflow:hidden;">
+      <table><thead><tr><th>Azonosító</th><th>Megnevezés</th><th>Partner</th><th>Kirendeltség</th><th>Prioritás</th><th>Státusz</th><th></th></tr></thead>
+      <tbody>${rows || `<tr><td colspan="7" style="text-align:center;color:#9A9584;padding:28px;">Nincs a szűrésnek megfelelő projekt.</td></tr>`}</tbody></table>
+    </div>`;
+}
+
+const PROFILE_TABS = [
+  ["alap","Alap adatok"],["kapcsolattartok","Kapcsolattartók"],["szereplok","Szereplők"],["dijak","Díjak"],
+  ["koltsegek","Költségek"],["eseti","Eseti szerződések"],["kifizetesek","Kifizetések"],
+  ["teljesites","Teljesítés igazolások"],["szerzodesek","Szerződések"],["dokumentumok","Dokumentumok"]
+];
+function openProject(id){ selectedId = id; profileTab = "alap"; render(); }
+function backToList(){ selectedId = null; render(); }
+
+function renderProjectProfile(){
+  const p = projects.find(x => x.id === selectedId);
+  const m = p.meta;
+  let body = "";
+  let showTopSave = false;
+
+  if (profileTab === "alap") {
+    showTopSave = true;
+    body = `
+      <div class="grid2">
+        <div class="field"><span class="label">Partner</span><div style="font-size:14px;font-weight:600;">${esc(p.partner)}</div></div>
+        <div class="checkbox-row" style="gap:22px;">
+          <label class="checkbox-row"><input type="checkbox" id="ap_kozponti" ${m.kozponti?"checked":""}> Központi projekttel összekapcsolható</label>
+          <label class="checkbox-row" style="opacity:.7;"><input type="checkbox" disabled ${p.belso_munka?"checked":""}> Belső munka</label>
+        </div>
+      </div>
+      <div class="grid4" style="margin-top:14px;">
+        <label class="field"><span class="label req">Ágazat</span><select class="field-input" id="ap_agazat">${AGAZATOK.map(o=>`<option ${o===m.agazat?"selected":""}>${o}</option>`).join("")}</select></label>
+        <label class="field"><span class="label req">Kategória</span><select class="field-input" id="ap_kategoria">${KATEGORIAK.map(o=>`<option ${o===m.kategoria?"selected":""}>${o}</option>`).join("")}</select></label>
+        <label class="field"><span class="label req">Vármegye</span><select class="field-input" id="ap_varmegye">${VARMEGYEK.map(o=>`<option ${o===m.varmegye?"selected":""}>${o}</option>`).join("")}</select></label>
+        <div class="field"><span class="label">Kirendeltség</span><div style="font-size:14px;">${esc(p.iroda)}</div></div>
+      </div>
+      <div class="grid3" style="margin-top:14px;">
+        <label class="field"><span class="label">Címkék</span><input class="field-input" id="ap_cimkek" value="${esc(m.cimkek)}"></label>
+        <div class="field"><span class="label">Projekt kezdete és vége</span>
+          <div style="display:flex;gap:6px;align-items:center;"><input class="field-input" id="ap_kezdete" value="${esc(m.kezdete)}"><span>→</span><input class="field-input" id="ap_vege" value="${esc(m.vege)}"></div>
+        </div>
+        <label class="field"><span class="label">Munkanap formátum</span><select class="field-input" id="ap_munkanap">${MUNKANAP_FORMATUMOK.map(o=>`<option ${o===m.munkanap?"selected":""}>${o}</option>`).join("")}</select></label>
+      </div>
+      <div class="grid3" style="margin-top:14px;">
+        <label class="field"><span class="label req">Üzemorvosi vizsgálat figyelése</span><select class="field-input" id="ap_uzemorv">${UZEMORVOSI_OPTS.map(o=>`<option ${o===m.uzemorv?"selected":""}>${o}</option>`).join("")}</select></label>
+        <label class="field"><span class="label">Szükséges foglalkoztatás-eü. vizsgálat</span><select class="field-input" id="ap_foglalk">${FOGLALK_OPTS.map(o=>`<option ${o===m.foglalk?"selected":""}>${o}</option>`).join("")}</select></label>
+        <label class="field"><span class="label req">EÜ vizsgálatok figyelése</span><select class="field-input" id="ap_euvizsg">${EU_VIZSGALAT_OPTS.map(o=>`<option ${o===m.euvizsg?"selected":""}>${o}</option>`).join("")}</select></label>
+      </div>
+
+      <div class="section-head">$ Számlázás</div>
+      <div class="checkbox-row" style="gap:20px;flex-wrap:wrap;">
+        <label class="checkbox-row"><input type="checkbox" id="ap_eszamla" ${m.eszamla?"checked":""}> E-Számla</label>
+        <label class="checkbox-row"><input type="checkbox" id="ap_szint" ${m.szint?"checked":""}> Számlázási integráció</label>
+        <label class="checkbox-row" style="opacity:.7;"><input type="checkbox" disabled> Automatikus számlázás</label>
+        <label class="checkbox-row"><input type="checkbox" id="ap_piszkozat" ${m.piszkozat?"checked":""}> Piszkozat teljig számlázásba küldése</label>
+        <label class="checkbox-row"><input type="checkbox" id="ap_mellek" ${m.mellek?"checked":""}> Számla melléklet küldése</label>
+      </div>
+      <div class="grid3" style="margin-top:14px;">
+        <label class="field"><span class="label req">Fizetési határidő</span><select class="field-input" id="ap_hatarido">${FIZETESI_HATARIDOK.map(o=>`<option ${o===m.hatarido?"selected":""}>${o}</option>`).join("")}</select></label>
+        <label class="field"><span class="label">ÁFA bevallás jellege</span><select class="field-input" id="ap_afabev">${AFA_BEVALLAS_OPTS.map(o=>`<option ${o===m.afabev?"selected":""}>${o}</option>`).join("")}</select></label>
+        <label class="field"><span class="label req">Fizetési kondíció</span><select class="field-input" id="ap_kondicio">${FIZETESI_KONDICIOK.map(o=>`<option ${o===m.kondicio?"selected":""}>${o}</option>`).join("")}</select></label>
+      </div>
+      <div class="grid3" style="margin-top:14px;">
+        <label class="field"><span class="label req">ÁFA</span><select class="field-input" id="ap_afa">${AFA_OPTS.map(o=>`<option ${o===m.afa?"selected":""}>${o}</option>`).join("")}</select></label>
+        <label class="field"><span class="label">Munka megnevezés</span><input class="field-input" id="ap_munkamegnevezes" value="${esc(m.munkamegnevezes)}"></label>
+        <label class="field"><span class="label req">Nemzetgazdasági ágazat</span><select class="field-input" id="ap_nemzgazd">${NEMZETGAZDASAGI_AGAZATOK.map(o=>`<option ${o===m.nemzgazd?"selected":""}>${o}</option>`).join("")}</select></label>
+      </div>
+      <div class="grid2" style="margin-top:14px;">
+        <label class="field"><span class="label">Fix számla megjegyzés</span><textarea class="field-input" id="ap_fixmegjegyzes" rows="2">${esc(m.fixmegjegyzes)}</textarea></label>
+        <label class="field"><span class="label">Számlázással kapcsolatos egyéb információk</span><textarea class="field-input" id="ap_szegyeb" rows="2">${esc(m.szegyeb)}</textarea></label>
+      </div>
+
+      <div class="grid3" style="margin-top:18px;">
+        <div class="field"><span class="label">Státusz</span><span class="badge status-${p.statusz}">${p.statusz}</span></div>
+        <label class="checkbox-row" style="align-self:end;"><input type="checkbox" id="ap_valtozo" ${m.valtozo?"checked":""}> Változó munkahely</label>
+      </div>
+
+      <div class="section-head">Munkavégzési helyek</div>
+      <div>${p.munkavegzesi_helyek.map(w=>`<div class="subcard"><b>${esc(w.irszam)} ${esc(w.varos)}</b>, ${esc(w.utca)}</div>`).join("") || `<div style="color:#9A9584;font-size:13px;">Nincs rögzített munkavégzési hely.</div>`}</div>
+
+      <div class="grid2" style="margin-top:14px;">
+        <label class="field"><span class="label req">Leírás</span><textarea class="field-input" id="ap_leiras" rows="2">${esc(m.leiras)}</textarea></label>
+        <label class="field"><span class="label">Ellátandó feladatok megnevezése</span><textarea class="field-input" id="ap_feladatok" rows="2">${esc(m.feladatok)}</textarea></label>
+      </div>
+      <label class="field" style="margin-top:14px;"><span class="label">Megjegyzés</span><textarea class="field-input" id="ap_megjegyzes" rows="2">${esc(m.megjegyzes)}</textarea></label>
+
+      <div class="section-head">$ Partner logó</div>
+      <div style="color:#B4791F;font-size:13px;">Jelenleg nincsen feltöltve partner logó! <button class="btn-ghost sm" style="margin-left:8px;">Feltöltés</button></div>
+    `;
+  } else if (profileTab === "kapcsolattartok") {
+    const accessLabel = { nincs: "Nincs hozzáférés", olvasas: "Olvasási jog", iras: "Írási jog" };
+    const accessColor = { nincs: "#7A7460", olvasas: "#2F7A4E", iras: "#B8863F" };
+    const cards = p.kapcsolattartok.map(k => `
+      <div class="contact-card">
+        <div style="width:38px;height:38px;border-radius:50%;background:#1C2536;color:#E9C989;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;">${k.nev.split(" ").map(n=>n[0]).join("").slice(0,2)}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">${esc(k.nev)}${k.szamlazasi ? `<span class="badge" style="background:#FBF0DF;color:#B4791F;">💳 Számlázási kapcsolattartó</span>` : ""}</div>
+          <div style="font-size:12.5px;color:#3A3A2E;margin-top:3px;">📧 ${esc(k.email) || "—"} &nbsp;·&nbsp; 📞 ${esc(k.mobil) || "—"}${k.vezetekes ? ` &nbsp;·&nbsp; ☎ ${esc(k.vezetekes)}` : ""}</div>
+          <div style="font-size:12px;margin-top:4px;color:${accessColor[k.hozzaferes || 'nincs']};font-weight:600;">Beosztáskezelő: ${accessLabel[k.hozzaferes || 'nincs']}</div>
+        </div>
+        <button class="icon-btn" title="Törlés" onclick="removeContact(${k.id})">🗑</button>
+      </div>`).join("");
+    body = `<div style="display:flex;flex-direction:column;gap:10px;max-width:560px;">${cards || `<div style="color:#9A9584;font-size:13.5px;">Még nincs kapcsolattartó felvéve.</div>`}</div>
+      <button class="btn-ghost sm" style="margin-top:14px;" onclick="openContactModal()">+ Új kapcsolattartó</button>`;
+  } else if (profileTab === "szereplok") {
+    const latestT = p.teljesitesek[0];
+    const latestFedezet = latestT ? computeTeljigTotals(p, latestT).fedezet : null;
+    const rows = p.szereplok.map(s => {
+      let komp = "—";
+      if (latestFedezet !== null) {
+        const szamolt = Math.max(Math.round(latestFedezet * (Number(s.reszesedes)||0) / 100), Number(s.min_osszeg)||0);
+        komp = fmt(szamolt) + " Ft";
+      }
+      return `<tr>
+      <td><div style="font-weight:600;color:#1C2536;">${esc(s.nev)}</div><div style="font-size:11.5px;color:#8A8570;">${esc(s.email)}</div></td>
+      <td>${esc(s.szerepkor)}</td><td>${esc(s.erv_kezdete)}</td><td>${esc(s.erv_vege)||"—"}</td>
+      <td>${esc(s.tipus)}</td><td>${s.osszeg}</td><td>${s.min_osszeg}</td><td>${s.reszesedes}%</td><td style="font-weight:600;">${komp}</td>
+      <td style="text-align:right;"><button class="icon-btn" onclick="removeSzereplo(${s.id})">🗑</button></td>
+    </tr>`;
+    }).join("");
+    body = `${latestFedezet !== null ? `<div style="background:#EAF1F7;color:#1C4E7A;font-size:12.5px;padding:9px 12px;border-radius:8px;margin-bottom:12px;">A Kompenzáció oszlop a legutóbbi teljesítés igazolás fedezete (${fmt(latestFedezet)} Ft) alapján, a Részesedés aránya szerint (min. összeg figyelembevételével) számolt érték.</div>` : ""}
+      <div style="display:flex;justify-content:flex-end;margin-bottom:10px;"><button class="btn-ghost sm" onclick="openSzereploModal()">+ Új szereplők</button></div>
+      <div class="card" style="overflow:hidden;overflow-x:auto;"><table><thead><tr><th>Szereplő</th><th>Szerepkör</th><th>Érv. kezdete</th><th>Érv. vége</th><th>Típusa</th><th>Összeg</th><th>Min. összeg</th><th>Részesedés</th><th>Kompenzáció</th><th></th></tr></thead>
+      <tbody>${rows || `<tr><td colspan="10" style="text-align:center;color:#9A9584;padding:22px;">Ehhez a projekthez még nincs szereplő rendelve.</td></tr>`}</tbody></table></div>`;
+  } else if (profileTab === "dijak") {
+    const segBar = `<div class="segment" style="margin-bottom:12px;">
+      <button class="${dijSegment==='vallalasi'?'active':''}" onclick="setDijSegment('vallalasi')">Vállalási díjak</button>
+      <button class="${dijSegment==='szamfejtesi'?'active':''}" onclick="setDijSegment('szamfejtesi')">Számfejtési bérek</button>
+    </div>`;
+    if (dijSegment === "vallalasi") {
+      const rows = p.dijak.map(d => `<tr><td style="font-weight:600;color:#1C2536;max-width:260px;white-space:normal;">${esc(d.nev)}</td><td>${esc(d.ar)} Ft</td><td>${esc(d.egysegtipus)}</td><td>${esc(d.tipus)}</td><td>${esc(d.ervenyesseg)}</td></tr>`).join("");
+      body = `${segBar}
+        <div style="display:flex;justify-content:flex-end;margin-bottom:10px;"><button class="btn-ghost sm" onclick="openModal('newDijOverlay')">+ Új vállalási díj</button></div>
+        <div class="card" style="overflow:hidden;overflow-x:auto;"><table><thead><tr><th>Megnevezés</th><th>Egységár</th><th>Egység típus</th><th>Típus</th><th>Érvényesség</th></tr></thead>
+        <tbody>${rows || `<tr><td colspan="5" style="text-align:center;color:#9A9584;padding:22px;">Ehhez a projekthez még nincs vállalási díj rögzítve.</td></tr>`}</tbody></table></div>`;
+    } else {
+      const rows = p.szamfejtesi_berek.map(s => {
+        const vd = p.dijak.find(d => d.id === s.vallalasi_dij_id);
+        return `<tr><td style="font-weight:600;color:#1C2536;max-width:220px;white-space:normal;">${esc(s.nev)}</td><td>${esc(s.ar)} Ft</td><td>${esc(s.egysegtipus)}</td><td>${esc(s.munkakor)}</td>
+          <td>${vd ? `<span class="link" title="Kapcsolódó vállalási díj">${esc(vd.nev)} (${esc(vd.ar)} ${esc(vd.egysegtipus)})</span>` : `<span style="color:#B4402C;">nincs hozzárendelve</span>`}</td></tr>`;
+      }).join("");
+      body = `${segBar}
+        <div style="background:#EAF1F7;color:#1C4E7A;font-size:12.5px;padding:9px 12px;border-radius:8px;margin-bottom:12px;">Minden számfejtési bérhez legalább 1 vállalási díj tartozik — ez teszi lehetővé a hónap végi óraegyeztetést (kifizetett vs. kiszámlázott óraszám), lásd a Teljesítés igazolások fület.</div>
+        <div style="display:flex;justify-content:flex-end;margin-bottom:10px;"><button class="btn-ghost sm" onclick="openSzfModal()">+ Új számfejtési bér</button></div>
+        <div class="card" style="overflow:hidden;overflow-x:auto;"><table><thead><tr><th>Megnevezés</th><th>Egységár</th><th>Egység típus</th><th>Munkakör</th><th>Kapcsolódó vállalási díj</th></tr></thead>
+        <tbody>${rows || `<tr><td colspan="5" style="text-align:center;color:#9A9584;padding:22px;">Ehhez a projekthez még nincs számfejtési bér rögzítve.</td></tr>`}</tbody></table></div>`;
+    }
+  } else if (profileTab === "koltsegek") {
+    const rows = p.koltsegek.map(k => `<tr><td style="font-weight:600;color:#1C2536;">${esc(k.nev)}</td><td>${esc(k.osszeg)} Ft</td><td>${esc(k.datum)}</td><td>${esc(k.idoszak)}</td><td>${esc(k.tipus)}</td>
+      <td>${k.szamlazando ? `<span class="badge status-aktív">igen</span>` : `<span class="badge status-piszkozat">nem</span>`}</td></tr>`).join("");
+    body = `<div style="display:flex;justify-content:flex-end;margin-bottom:10px;"><button class="btn-ghost sm" onclick="openModal('newKoltsegOverlay')">+ Új költség</button></div>
+      <div class="card" style="overflow:hidden;"><table><thead><tr><th>Megnevezés</th><th>Összeg</th><th>Dátum</th><th>Elszámolási időszak</th><th>Típus</th><th>Számlázandó?</th></tr></thead>
+      <tbody>${rows || `<tr><td colspan="6" style="text-align:center;color:#9A9584;padding:22px;">Ehhez a projekthez még nincs rögzített költség.</td></tr>`}</tbody></table></div>`;
+  } else if (profileTab === "eseti") {
+    const es = p.eseti_settings;
+    body = `
+      <div style="display:flex;justify-content:flex-end;margin-bottom:6px;"><button class="btn-primary sm" onclick="saveEsetiSettings()">💾 Mentés</button></div>
+      <div class="grid2">
+        <label class="field"><span class="label">Alapértelmezett nyomtatvány sablonok</span><input class="field-input" id="es_sablon" value="${esc(es.sablon)}" placeholder="Kattints ide a választáshoz"></label>
+        <label class="field"><span class="label">Alapértelmezett digitális nyomtatvány sablonok</span><input class="field-input" id="es_dsablon" value="${esc(es.digitalis_sablon)}" placeholder="Kattints ide a választáshoz"></label>
+      </div>
+      <label class="field" style="margin-top:14px;"><span class="label">Eseti munkavégzési hely</span><input class="field-input" id="es_hely" value="${esc(es.eseti_munkahely)}"></label>
+      ${[0,1,2,3,4].map(i=>`<label class="field" style="margin-top:14px;"><span class="label">Eseti kiegészítés ${i+1}</span><textarea class="field-input" id="es_kieg${i}" rows="3" placeholder="Szövegtartalom, helyőrzőként elhelyezhető az eseti szerződésen…">${esc(es.kiegeszites[i])}</textarea></label>`).join("")}
+    `;
+  } else if (profileTab === "kifizetesek") {
+    const rows = p.kifizetesek.map(k => `<tr>
+      <td>${esc(k.temavezeto)}</td><td>${esc(k.szf_idoszak)}</td><td>${esc(k.teljesitesi_idoszak)}</td><td>${k.diakok}</td><td>${esc(k.osszesen)} Ft</td>
+      <td>${esc(k.megjegyzes)||"—"}</td><td>${esc(k.letrehozva)}</td><td><span class="badge status-${k.statusz}">${esc(k.statusz)}</span></td>
+      <td style="text-align:right;">👁</td></tr>`).join("");
+    body = `
+      <div class="card" style="padding:14px;margin-bottom:14px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+        <div class="field" style="flex:1 1 220px;"><span class="label">Státusz</span><select class="field-input" multiple style="height:auto;">${KIFIZETES_STATUSOK.map(s=>`<option>${s}</option>`).join("")}</select></div>
+        <div class="field" style="flex:1 1 160px;"><span class="label">Rendszer</span><select class="field-input"><option>Mind</option></select></div>
+      </div>
+      <div class="card" style="overflow:hidden;overflow-x:auto;"><table><thead><tr><th>Témavezető</th><th>Számfejtési időszak</th><th>Teljesítési időszak</th><th>Diákok száma</th><th>Összesen</th><th>Megjegyzés</th><th>Létrehozva</th><th>Státusz</th><th></th></tr></thead>
+      <tbody>${rows || `<tr><td colspan="9" style="text-align:center;color:#9A9584;padding:22px;">Ehhez a projekthez még nincs kifizetési csoport.</td></tr>`}</tbody></table></div>`;
+  } else if (profileTab === "teljesites") {
+    const rows = p.teljesitesek.map(t => {
+      const tot = computeTeljigTotals(p, t);
+      return `<tr class="row" data-tid="${t.id}">
+      <td style="font-weight:600;color:#1C2536;">${esc(t.azonosito)}</td><td>${esc(t.idoszak)}</td><td>${fmt(tot.bevetel)} Ft</td>
+      <td class="${tot.fedezet<0?'mismatch':'match'}">${fmt(tot.fedezet)} Ft</td>
+      <td><span class="badge status-${t.statusz}">${esc(t.statusz)}</span></td><td>${(t.dokumentumok||[]).length} db</td>
+    </tr>`;
+    }).join("");
+    body = `<div style="display:flex;justify-content:flex-end;margin-bottom:10px;"><button class="btn-ghost sm" onclick="openTeljigCreateModal()">+ Új teljig</button></div>
+      <div class="card" style="overflow:hidden;overflow-x:auto;"><table><thead><tr><th>Azonosító</th><th>Elszámolási időszak</th><th>Bevétel (Vállalási díj)</th><th>Fedezet</th><th>Státusz</th><th>Dokumentum</th></tr></thead>
+      <tbody>${rows || `<tr><td colspan="6" style="text-align:center;color:#9A9584;padding:22px;">Ehhez a projekthez még nincs teljesítés igazolás.</td></tr>`}</tbody></table></div>
+      <div style="font-size:12px;color:#8A8570;margin-top:10px;">Kattints egy sorra a Munkalap ↔ Számfejtési bér ↔ Vállalási díj óraegyeztetés és a fedezetszámítás megnyitásához. <b>Fedezet = Bevétel (Vállalási díj) − Tagi bér (Számfejtési bér) − Közvetlen költségek</b> — ez alapján számítjuk a Szereplők havi díjait is.</div>`;
+  } else if (profileTab === "szerzodesek") {
+    const rows = p.szerzodesek.map(s => `<tr class="row" data-sid="${s.id}">
+      <td>${s.statusz==="aktív" ? "🟢" : "⚪"}</td>
+      <td class="link">${esc(s.azonosito)}</td><td>${esc(s.kelte)}</td><td>${esc(s.erv_kezdete)}</td><td>${esc(s.erv_vege)||"—"}</td>
+      <td>${(s.dokumentumok||[]).length} db</td><td>${esc(s.megjegyzes)||"—"}</td>
+    </tr>`).join("");
+    body = `<div style="display:flex;justify-content:flex-end;margin-bottom:10px;"><button class="btn-ghost sm" onclick="openSzerzodesModal()">+ Új szerződés</button></div>
+      <div class="card" style="overflow:hidden;"><table><thead><tr><th></th><th>Azonosító</th><th>Szerződés kelte</th><th>Érv. kezdete</th><th>Érv. vége</th><th>Csatolmány</th><th>Megjegyzés</th></tr></thead>
+      <tbody>${rows || `<tr><td colspan="7" style="text-align:center;color:#9A9584;padding:22px;">Ehhez a projekthez még nincs szerződés.</td></tr>`}</tbody></table></div>`;
+  } else if (profileTab === "dokumentumok") {
+    const rows = p.dokumentumok.map(d => `<tr>
+      <td onclick="event.stopPropagation()"><input type="checkbox" class="dokchk" data-id="${d.id}" ${dokChecked.has(d.id)?"checked":""}></td>
+      <td>${d.statusz==="Feltöltve" ? "⚫" : "🟢"}</td>
+      <td>${esc(d.tipus)}</td><td>${esc(d.idoszak)}</td>
+      <td>${esc(d.feltolto)||"—"}</td><td class="link" style="max-width:260px;white-space:normal;">${esc(d.nev)}</td>
+      <td>${esc(d.meret)||"—"}</td><td>${esc(d.feltoltve)||"—"}</td><td>${esc(d.megjegyzes)||"—"}</td>
+    </tr>`).join("");
+    body = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:10px;">
+        <button class="btn-primary sm" onclick="openModal('uploadOverlay')">⇪ Projekt dokumentum feltöltés</button>
+        <button class="btn-ghost sm" onclick="deleteSelectedDocs()">🗑 Kijelölt fájlok törlése</button>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px;">
+        <select class="field-input" style="width:auto;font-size:12.5px;"><option>Minden időszak</option></select>
+        <select class="field-input" style="width:auto;font-size:12.5px;"><option>Feltöltve</option><option>Jóváhagyva</option><option>Elutasítva</option></select>
+        <select class="field-input" style="width:auto;font-size:12.5px;"><option>Minden dokumentum típus</option><option>Szerződés</option><option>Teljesítés igazolás</option><option>Egyéb projekt dokumentum</option><option>Számla</option><option>Jelenléti ív</option><option>Összesítő</option><option>Átvételi</option></select>
+        <select class="field-input" style="width:auto;font-size:12.5px;"><option>Minden formátum</option></select>
+      </div>
+      <div class="card" style="overflow:hidden;overflow-x:auto;"><table><thead><tr><th></th><th>Státusz</th><th>Típus</th><th>Időszak</th><th>Feltöltő</th><th>Név</th><th>Méret</th><th>Feltöltve</th><th>Megjegyzés</th></tr></thead>
+      <tbody>${rows || `<tr><td colspan="9" style="text-align:center;color:#9A9584;padding:22px;">Ehhez a projekthez még nincs feltöltött dokumentum.</td></tr>`}</tbody></table></div>`;
+  }
+
+  return `
+    <button class="btn-ghost" onclick="backToList()">← Vissza a listához</button>
+    <div class="card" style="margin-top:14px;padding:20px 24px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div style="width:46px;height:46px;border-radius:12px;background:#1C2536;color:#E9C989;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;font-family:monospace;">${esc(p.azonosito).replace("#","")}</div>
+          <div>
+            <div style="font-size:19px;font-weight:700;color:#1C2536;">${esc(p.nev)}</div>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:4px;flex-wrap:wrap;">
+              <span class="badge status-${p.statusz}"><span class="dot" style="background:currentColor;"></span>${p.statusz}</span>
+              <span class="badge status-${p.prioritas}">${p.prioritas}</span>
+              <span style="font-size:12.5px;color:#8A8570;">${esc(p.partner)} · ${esc(p.iroda)}</span>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-ghost" onclick="openNewProjectModal(true)">+ Új alprojekt</button>
+          ${showTopSave ? `<button class="btn-primary" onclick="saveAlap()">💾 Mentés</button>` : ""}
+        </div>
+      </div>
+      <div class="tabs">
+        ${PROFILE_TABS.map(([id,label])=>{
+          const count = id==="kapcsolattartok" ? ` (${p.kapcsolattartok.length})` : id==="szereplok" ? ` (${p.szereplok.length})` : id==="dokumentumok" ? ` (${p.dokumentumok.length})` : "";
+          return `<button class="tab-btn ${profileTab===id?'active':''}" data-tab="${id}">${label}${count}</button>`;
+        }).join("")}
+      </div>
+      <div style="padding-top:20px;">${body}</div>
+    </div>`;
+}
+
+function saveAlap(){
+  const p = projects.find(x => x.id === selectedId);
+  const ids = ["kozponti","agazat","kategoria","cimkek","kezdete","vege","munkanap","uzemorv","foglalk","euvizsg",
+    "eszamla","szint","piszkozat","mellek","hatarido","afabev","kondicio","afa","munkamegnevezes","fixmegjegyzes","szegyeb",
+    "nemzgazd","valtozo","leiras","feladatok","megjegyzes"];
+  ids.forEach(k=>{
+    const el = document.getElementById("ap_"+k);
+    if (!el) return;
+    p.meta[k] = el.type === "checkbox" ? el.checked : el.value;
+  });
+  const varmegyeEl = document.getElementById("ap_varmegye");
+  if (varmegyeEl) p.meta.varmegye = varmegyeEl.value;
+  showToast("Projekt alapadatai mentve.");
+  render();
+}
+function setDijSegment(s){ dijSegment = s; render(); }
+function saveEsetiSettings(){
+  const p = projects.find(x => x.id === selectedId);
+  p.eseti_settings.sablon = document.getElementById("es_sablon").value;
+  p.eseti_settings.digitalis_sablon = document.getElementById("es_dsablon").value;
+  p.eseti_settings.eseti_munkahely = document.getElementById("es_hely").value;
+  p.eseti_settings.kiegeszites = [0,1,2,3,4].map(i=>document.getElementById("es_kieg"+i).value);
+  showToast("Eseti szerződés beállítások mentve.");
+  render();
+}
+
+function wireEvents(){
+  document.getElementById("_q")?.addEventListener("input", render);
+  document.getElementById("_status")?.addEventListener("change", render);
+  document.getElementById("_belso")?.addEventListener("change", render);
+  document.getElementById("actionsBtn")?.addEventListener("click", ()=>{ actionsOpen = !actionsOpen; render(); });
+  document.querySelectorAll(".row[data-id]").forEach(r=>r.addEventListener("click", ()=> openProject(Number(r.dataset.id))));
+  document.querySelectorAll(".row[data-tid]").forEach(r=>r.addEventListener("click", ()=> openTeljigModal(Number(r.dataset.tid))));
+  document.querySelectorAll(".row[data-sid]").forEach(r=>r.addEventListener("click", ()=> showToast("Szerződés szerkesztése — a mezők ugyanígy módosíthatók, mint felvételkor.")));
+  document.querySelectorAll(".tab-btn").forEach(b=>b.addEventListener("click", ()=>{ profileTab = b.dataset.tab; render(); }));
+  document.querySelectorAll(".dokchk").forEach(c=>c.addEventListener("change", ()=>{
+    const id = Number(c.dataset.id);
+    c.checked ? dokChecked.add(id) : dokChecked.delete(id);
+  }));
+}
+function deleteSelectedDocs(){
+  if (dokChecked.size === 0) { showToast("Jelölj ki legalább egy fájlt."); return; }
+  const p = projects.find(x => x.id === selectedId);
+  p.dokumentumok = p.dokumentumok.filter(d => !dokChecked.has(d.id));
+  showToast(`${dokChecked.size} fájl törölve.`);
+  dokChecked.clear();
+  render();
+}
+
+function exportAction(label){ showToast(`${label} elindítva (.xlsx).`); actionsOpen = false; render(); }
+function openModal(id){ document.getElementById(id).classList.add("open"); }
+function closeModal(id){ document.getElementById(id).classList.remove("open"); }
+
+// --- Új projekt / alprojekt ---
+let newProjectWorkplaces = [];
+function setModalTab(tab){
+  modalTab = tab;
+  document.querySelectorAll("#np_subtabs .modal-tab").forEach(b=>b.classList.toggle("active", b.dataset.mt===tab));
+  document.getElementById("np_pane_alap").style.display = tab==="alap" ? "block" : "none";
+  document.getElementById("np_pane_szerz").style.display = tab==="szerz" ? "block" : "none";
+  document.getElementById("np_pane_kapcs").style.display = tab==="kapcs" ? "block" : "none";
+}
+function addWorkplace(){ newProjectWorkplaces.push({id: Date.now()}); renderNewProjectWorkplaces(); }
+function removeNewWorkplace(id){ newProjectWorkplaces = newProjectWorkplaces.filter(w=>w.id!==id); renderNewProjectWorkplaces(); }
+function renderNewProjectWorkplaces(){
+  document.getElementById("np_workplaces").innerHTML = newProjectWorkplaces.map(w=>`
+    <div class="subcard" data-wid="${w.id}"><button class="remove-x" onclick="removeNewWorkplace(${w.id})">−</button>
+      <div class="grid2"><label class="field"><span class="label req">Ir.szám</span><input class="field-input wp-irszam"></label><label class="field"><span class="label req">Város</span><input class="field-input wp-varos"></label></div>
+      <label class="field" style="margin-top:8px;"><span class="label req">Utca, Hsz.</span><input class="field-input wp-utca"></label>
+    </div>`).join("") || `<div style="color:#9A9584;font-size:13px;">Még nincs munkavégzési hely megadva.</div>`;
+}
+function openNewProjectModal(isSubproject){
+  document.getElementById("np_title").textContent = isSubproject ? "Új alprojekt" : "Új projekt felvétele";
+  document.getElementById("np_subtabs").style.display = isSubproject ? "flex" : "none";
+  setModalTab("alap");
+  fillSelect("np_partner", PARTNER_NAMES); fillSelect("np_agazat", AGAZATOK); fillSelect("np_kategoria", KATEGORIAK);
+  fillSelect("np_varmegye", VARMEGYEK); fillSelect("np_kirendeltseg", KIRENDELTSEGEK); fillSelect("np_munkanap", MUNKANAP_FORMATUMOK);
+  fillSelect("np_uzemorv", UZEMORVOSI_OPTS); fillSelect("np_foglalk", FOGLALK_OPTS); fillSelect("np_euvizsg", EU_VIZSGALAT_OPTS);
+  fillSelect("np_hatarido", FIZETESI_HATARIDOK); fillSelect("np_afabev", AFA_BEVALLAS_OPTS); fillSelect("np_kondicio", FIZETESI_KONDICIOK);
+  fillSelect("np_afa", AFA_OPTS); fillSelect("np_nemzgazd", NEMZETGAZDASAGI_AGAZATOK);
+  ["np_nev","np_cimkek","np_kezdete","np_vege","np_munkamegnevezes","np_fixmegjegyzes","np_szegyeb"].forEach(id=>document.getElementById(id).value="");
+  ["np_kozponti","np_belso","np_szint","np_piszkozat","np_mellek","np_valtozo"].forEach(id=>document.getElementById(id).checked=false);
+  document.getElementById("np_eszamla").checked = true;
+  newProjectWorkplaces = [];
+  renderNewProjectWorkplaces();
+  if (isSubproject && selectedId) {
+    const parent = projects.find(x=>x.id===selectedId);
+    document.getElementById("np_nev").value = parent.nev + " — alprojekt";
+    document.getElementById("np_partner").value = parent.partner;
+  }
+  openModal("newProjectOverlay");
+}
+function createProject(){
+  const nev = document.getElementById("np_nev").value.trim();
+  if (!nev) { showToast("Add meg a projekt megnevezését."); return; }
+  document.querySelectorAll("#np_workplaces .subcard").forEach((el,i)=>{
+    newProjectWorkplaces[i].irszam = el.querySelector(".wp-irszam").value;
+    newProjectWorkplaces[i].varos = el.querySelector(".wp-varos").value;
+    newProjectWorkplaces[i].utca = el.querySelector(".wp-utca").value;
+  });
+  const id = Math.max(...projects.map(p=>p.id)) + 1;
+  projects.unshift({
+    id, azonosito: "#"+(9000+Math.floor(Math.random()*999)), nev,
+    partner: document.getElementById("np_partner").value, iroda: document.getElementById("np_kirendeltseg").value,
+    statusz: "aktív", prioritas: "Elsődleges", belso_munka: document.getElementById("np_belso").checked, letrehozva: "2026.07.01",
+    meta: {
+      kozponti: document.getElementById("np_kozponti").checked, agazat: document.getElementById("np_agazat").value,
+      kategoria: document.getElementById("np_kategoria").value, varmegye: document.getElementById("np_varmegye").value,
+      cimkek: document.getElementById("np_cimkek").value, kezdete: document.getElementById("np_kezdete").value, vege: document.getElementById("np_vege").value,
+      munkanap: document.getElementById("np_munkanap").value, uzemorv: document.getElementById("np_uzemorv").value,
+      foglalk: document.getElementById("np_foglalk").value, euvizsg: document.getElementById("np_euvizsg").value,
+      eszamla: document.getElementById("np_eszamla").checked, szint: document.getElementById("np_szint").checked,
+      auto: false, piszkozat: document.getElementById("np_piszkozat").checked, mellek: document.getElementById("np_mellek").checked,
+      hatarido: document.getElementById("np_hatarido").value, afabev: document.getElementById("np_afabev").value,
+      kondicio: document.getElementById("np_kondicio").value, afa: document.getElementById("np_afa").value,
+      munkamegnevezes: document.getElementById("np_munkamegnevezes").value, fixmegjegyzes: document.getElementById("np_fixmegjegyzes").value,
+      szegyeb: document.getElementById("np_szegyeb").value, nemzgazd: document.getElementById("np_nemzgazd").value,
+      valtozo: document.getElementById("np_valtozo").checked, leiras: document.getElementById("np_leiras").value,
+      feladatok: document.getElementById("np_feladatok").value, megjegyzes: document.getElementById("np_megjegyzes").value
+    },
+    munkavegzesi_helyek: newProjectWorkplaces,
+    kapcsolattartok:[], szereplok:[], dijak:[], szamfejtesi_berek:[], koltsegek:[],
+    eseti_settings:{ sablon:"", digitalis_sablon:"", eseti_munkahely:"", kiegeszites:["","","","",""] },
+    szerzodesek:[], kifizetesek:[], teljesitesek:[], dokumentumok:[]
+  });
+  closeModal("newProjectOverlay");
+  showToast(`${nev} projekt létrehozva.`);
+  openProject(id);
+}
+
+// --- Kapcsolattartó ---
+function openContactModal(){
+  ["nk_nev","nk_email","nk_mobil","nk_vezetekes","nk_megjegyzes"].forEach(f=>document.getElementById(f).value="");
+  document.getElementById("nk_szamlazasi").checked = false;
+  document.getElementById("nk_hozzaferes").value = "nincs";
+  openModal("newContactOverlay");
+}
+function createContact(){
+  const nev = document.getElementById("nk_nev").value.trim();
+  if (!nev) { showToast("Add meg a kapcsolattartó nevét."); return; }
+  const p = projects.find(x => x.id === selectedId);
+  p.kapcsolattartok.push({ id: Date.now(), nev, email: document.getElementById("nk_email").value, mobil: document.getElementById("nk_mobil").value,
+    vezetekes: document.getElementById("nk_vezetekes").value, szamlazasi: document.getElementById("nk_szamlazasi").checked,
+    hozzaferes: document.getElementById("nk_hozzaferes").value, megjegyzes: document.getElementById("nk_megjegyzes").value });
+  closeModal("newContactOverlay");
+  showToast(`${nev} hozzáadva a kapcsolattartókhoz.`);
+  render();
+}
+function removeContact(id){
+  const p = projects.find(x => x.id === selectedId);
+  p.kapcsolattartok = p.kapcsolattartok.filter(k => k.id !== id);
+  showToast("Kapcsolattartó törölve.");
+  render();
+}
+
+// --- Szereplők ---
+function openSzereploModal(){ szereploRows = [{id: Date.now()}]; renderSzereploRows(); openModal("newSzereploOverlay"); }
+function addSzereploRow(){ szereploRows.push({id: Date.now()}); renderSzereploRows(); }
+function removeSzereploRow(id){ szereploRows = szereploRows.filter(r=>r.id!==id); renderSzereploRows(); }
+function renderSzereploRows(){
+  document.getElementById("sz_rows").innerHTML = szereploRows.map(r => `
+    <div class="subcard" data-rid="${r.id}">
+      ${szereploRows.length>1 ? `<button class="remove-x" onclick="removeSzereploRow(${r.id})">−</button>` : ""}
+      <div class="grid2"><label class="field"><span class="label req">Szereplő</span><input class="field-input sz-nev" placeholder="Név"></label>
+        <label class="field"><span class="label req">Szerepkör</span><select class="field-input sz-szerepkor">${SZEREPKOROK.map(s=>`<option>${s}</option>`).join("")}</select></label></div>
+      <div class="grid3" style="margin-top:8px;"><label class="field"><span class="label">Érv. kezdete</span><input class="field-input sz-kezdete" placeholder="ÉÉÉÉ-HH"></label>
+        <label class="field"><span class="label">Érv. vége</span><input class="field-input sz-vege" placeholder="opcionális"></label>
+        <label class="field"><span class="label">Típusa</span><select class="field-input sz-tipus">${SZEREPLO_TIPUSOK.map(s=>`<option>${s}</option>`).join("")}</select></label></div>
+      <div class="grid3" style="margin-top:8px;"><label class="field"><span class="label">Összeg</span><input class="field-input sz-osszeg" placeholder="0"></label>
+        <label class="field"><span class="label">Min. összeg</span><input class="field-input sz-minosszeg" placeholder="0"></label>
+        <label class="field"><span class="label">Részesedés aránya (%)</span><input class="field-input sz-reszesedes" placeholder="0"></label></div>
+    </div>`).join("");
+}
+function createSzereplok(){
+  const p = projects.find(x => x.id === selectedId);
+  let added = 0;
+  document.querySelectorAll("#sz_rows .subcard").forEach(c => {
+    const nev = c.querySelector(".sz-nev").value.trim();
+    if (!nev) return;
+    p.szereplok.push({ id: Date.now()+Math.random(), nev, email: "", szerepkor: c.querySelector(".sz-szerepkor").value,
+      erv_kezdete: c.querySelector(".sz-kezdete").value, erv_vege: c.querySelector(".sz-vege").value,
+      tipus: c.querySelector(".sz-tipus").value, osszeg: c.querySelector(".sz-osszeg").value || 0,
+      min_osszeg: c.querySelector(".sz-minosszeg").value || 0, reszesedes: c.querySelector(".sz-reszesedes").value || 0, kompenzacio: "—" });
+    added++;
+  });
+  if (!added) { showToast("Adj meg legalább egy szereplőt."); return; }
+  closeModal("newSzereploOverlay");
+  showToast(`${added} szereplő hozzáadva a projekthez.`);
+  render();
+}
+function removeSzereplo(id){
+  const p = projects.find(x => x.id === selectedId);
+  p.szereplok = p.szereplok.filter(s => s.id !== id);
+  showToast("Szereplő törölve.");
+  render();
+}
+
+// --- Vállalási díjak ---
+function createDij(){
+  const nev = document.getElementById("dj_nev").value.trim();
+  if (!nev) { showToast("Add meg a díj megnevezését."); return; }
+  const p = projects.find(x => x.id === selectedId);
+  const id = Math.max(0, ...p.dijak.map(d=>d.id)) + 1;
+  p.dijak.unshift({ id, nev, ar: document.getElementById("dj_ar").value, egysegtipus: document.getElementById("dj_egysegtipus").value,
+    tipus: document.getElementById("dj_tipus").value,
+    ervenyesseg: (document.getElementById("dj_kezdete").value||"—") + "–" + (document.getElementById("dj_vege").value||"—") });
+  closeModal("newDijOverlay");
+  showToast("Vállalási díj mentve.");
+  render();
+}
+
+// --- Számfejtési bérek ---
+function openSzfModal(){
+  const p = projects.find(x => x.id === selectedId);
+  fillSelect("szf_egysegtipus", EGYSEG_TIPUSOK);
+  fillSelect("szf_munkakor", MUNKAKOROK);
+  const sel = document.getElementById("szf_vallalasi_dij");
+  sel.innerHTML = p.dijak.length
+    ? p.dijak.map(d=>`<option value="${d.id}">${d.nev} — ${d.ar} ${d.egysegtipus}</option>`).join("")
+    : `<option value="">Nincs még vállalási díj — vedd fel előbb a Vállalási díjak alatt</option>`;
+  ["szf_nev","szf_ar","szf_kezdete","szf_vege","szf_normaora"].forEach(id=>document.getElementById(id).value="");
+  document.getElementById("szf_jovairas").checked = false;
+  document.getElementById("szf_periods").innerHTML = periodBoxesHtml("szf");
+  openModal("newSzfOverlay");
+}
+function createSzf(){
+  const p = projects.find(x => x.id === selectedId);
+  const nev = document.getElementById("szf_nev").value.trim();
+  const vdSel = document.getElementById("szf_vallalasi_dij");
+  if (!nev) { showToast("Add meg a bér megnevezését."); return; }
+  if (!vdSel.value) { showToast("Válassz egy kapcsolódó vállalási díjat — ez kötelező."); return; }
+  const id = Math.max(0, ...p.szamfejtesi_berek.map(s=>s.id)) + 1;
+  p.szamfejtesi_berek.unshift({
+    id, nev, ar: document.getElementById("szf_ar").value, egysegtipus: document.getElementById("szf_egysegtipus").value,
+    normaora: document.getElementById("szf_normaora").value, munkakor: document.getElementById("szf_munkakor").value,
+    vallalasi_dij_id: Number(vdSel.value),
+    ervenyesseg: (document.getElementById("szf_kezdete").value||"—") + "–" + (document.getElementById("szf_vege").value||"—")
+  });
+  closeModal("newSzfOverlay");
+  showToast("Számfejtési bér mentve, hozzárendelve a kiválasztott vállalási díjhoz.");
+  render();
+}
+
+// --- Költségek ---
+function createKoltseg(){
+  const nev = document.getElementById("ko_nev").value.trim();
+  const osszeg = document.getElementById("ko_osszeg").value.trim();
+  if (!nev || !osszeg) { showToast("Töltsd ki a kötelező mezőket."); return; }
+  const p = projects.find(x => x.id === selectedId);
+  p.koltsegek.unshift({ id: Date.now(), nev, osszeg, datum: document.getElementById("ko_datum").value, idoszak: document.getElementById("ko_idoszak").value,
+    tipus: document.getElementById("ko_tipus").value, szamlazando: document.getElementById("ko_szamlazando").checked });
+  closeModal("newKoltsegOverlay");
+  showToast("Költség mentve.");
+  render();
+}
+
+// --- Szerződések (projekt szintű) ---
+function setSzerzTab(t){
+  szerzTab = t;
+  document.querySelectorAll("#newSzerzodesOverlay .modal-tab[data-st]").forEach(b=>b.classList.toggle("active", b.dataset.st===t));
+  document.getElementById("szerz_pane_adatai").style.display = t==="adatai" ? "block" : "none";
+  document.getElementById("szerz_pane_dok").style.display = t==="dok" ? "block" : "none";
+}
+function setCimTab(t){
+  cimTab = t;
+  document.querySelectorAll("#newSzerzodesOverlay .modal-tab[data-ct]").forEach(b=>b.classList.toggle("active", b.dataset.ct===t));
+  document.getElementById("cim_pane_szamlazasi").style.display = t==="szamlazasi" ? "grid" : "none";
+  document.getElementById("cim_pane_levelezesi").style.display = t==="levelezesi" ? "grid" : "none";
+}
+function openSzerzodesModal(){
+  const p = projects.find(x => x.id === selectedId);
+  document.getElementById("szerz_partner_display").textContent = p.partner;
+  ["sze_kelte","sze_erv_kezdete","sze_erv_vege","sze_sz_irszam","sze_sz_varos","sze_sz_utca","sze_sz_postafiok","sze_le_irszam","sze_le_varos","sze_le_utca","sze_megjegyzes"].forEach(id=>document.getElementById(id).value="");
+  setSzerzTab("adatai"); setCimTab("szamlazasi");
+  openModal("newSzerzodesOverlay");
+}
+function createSzerzodes(){
+  const kelte = document.getElementById("sze_kelte").value.trim();
+  if (!kelte) { showToast("Add meg a szerződés keltét."); return; }
+  const p = projects.find(x => x.id === selectedId);
+  const id = Math.max(0, ...p.szerzodesek.map(s=>s.id)) + 1;
+  p.szerzodesek.unshift({
+    id, azonosito: String(30000+Math.floor(Math.random()*9999)), kelte, erv_kezdete: document.getElementById("sze_erv_kezdete").value,
+    erv_vege: document.getElementById("sze_erv_vege").value, statusz: "aktív",
+    szamlazasi_cim: { irszam: document.getElementById("sze_sz_irszam").value, varos: document.getElementById("sze_sz_varos").value, utca: document.getElementById("sze_sz_utca").value, postafiok: document.getElementById("sze_sz_postafiok").value },
+    levelezesi_cim: { irszam: document.getElementById("sze_le_irszam").value, varos: document.getElementById("sze_le_varos").value, utca: document.getElementById("sze_le_utca").value },
+    megjegyzes: document.getElementById("sze_megjegyzes").value, dokumentumok: []
+  });
+  closeModal("newSzerzodesOverlay");
+  showToast("Szerződés létrehozva.");
+  render();
+}
+
+// --- Teljesítés igazolás: fedezetszámítás segédfüggvények ---
+function parseNum(v){ if (v===null||v===undefined) return 0; const n = parseFloat(String(v).replace(/\s/g,"").replace(",",".")); return isNaN(n) ? 0 : n; }
+function fmt(n){ return Math.round(n).toLocaleString("hu-HU"); }
+
+function computeTeljigTotals(p, t){
+  let bevetel = 0, tagiber = 0;
+  (t.sorok||[]).forEach(s => {
+    const dij = p.dijak.find(d => d.id === s.dij_id);
+    const szf = p.szamfejtesi_berek.find(x => x.vallalasi_dij_id === s.dij_id);
+    if (dij) bevetel += parseNum(dij.ar) * parseNum(s.elsz_menny);
+    if (szf) tagiber += parseNum(szf.ar) * parseNum(s.menny);
+  });
+  let koltseg = 0;
+  (t.koltseg_sorok||[]).forEach(k => {
+    const src = p.koltsegek.find(c => c.id === k.koltseg_id);
+    if (src) koltseg += parseNum(src.osszeg) * (parseNum(k.szorzo) || 1);
+  });
+  return { bevetel, tagiber, koltseg, fedezet: bevetel - tagiber - koltseg };
+}
+
+// --- Teljig create/edit modal ---
+let teljigEditId = null;
+let teljigSorok = [];
+let teljigKoltsegSorok = [];
+let teljigHeader = {};
+
+function openTeljigCreateModal(){
+  teljigEditId = null;
+  teljigSorok = [];
+  teljigKoltsegSorok = [];
+  teljigHeader = { statusz:"Piszkozat", teljig_datuma:"2026-07-05", idoszak:"2026-07", szl_idoszak_kezdete:"", szl_idoszak_vege:"", szl_po:"", csoportositas:false, megjegyzes:"" };
+  renderTeljigModal();
+  openModal("teljigOverlay");
+}
+function openTeljigModal(tid){
+  const p = projects.find(x => x.id === selectedId);
+  const t = p.teljesitesek.find(x => x.id === tid);
+  teljigEditId = tid;
+  teljigSorok = (t.sorok||[]).map(s => ({...s}));
+  teljigKoltsegSorok = (t.koltseg_sorok||[]).map(k => ({...k}));
+  teljigHeader = { statusz:t.statusz, teljig_datuma:t.teljig_datuma, idoszak:t.idoszak, szl_idoszak_kezdete:t.szl_idoszak_kezdete, szl_idoszak_vege:t.szl_idoszak_vege, szl_po:t.szl_po||"", csoportositas:!!t.csoportositas, megjegyzes:t.megjegyzes||"", azonosito:t.azonosito };
+  renderTeljigModal();
+  openModal("teljigOverlay");
+}
+
+function syncTeljigHeaderFromDom(){
+  teljigHeader.teljig_datuma = document.getElementById("tj_datuma")?.value ?? teljigHeader.teljig_datuma;
+  teljigHeader.idoszak = document.getElementById("tj_idoszak")?.value ?? teljigHeader.idoszak;
+  teljigHeader.szl_idoszak_kezdete = document.getElementById("tj_szlk")?.value ?? teljigHeader.szl_idoszak_kezdete;
+  teljigHeader.szl_idoszak_vege = document.getElementById("tj_szlv")?.value ?? teljigHeader.szl_idoszak_vege;
+  teljigHeader.szl_po = document.getElementById("tj_po")?.value ?? teljigHeader.szl_po;
+  teljigHeader.csoportositas = document.getElementById("tj_csoport")?.checked ?? teljigHeader.csoportositas;
+  teljigHeader.megjegyzes = document.getElementById("tj_megjegyzes")?.value ?? teljigHeader.megjegyzes;
+}
+
+function renderTeljigSorTable(p){
+  const rows = teljigSorok.map((s,i) => {
+    const dij = p.dijak.find(d => d.id === s.dij_id);
+    const szf = p.szamfejtesi_berek.find(x => x.vallalasi_dij_id === s.dij_id);
+    const mismatch = parseNum(s.menny) !== parseNum(s.elsz_menny);
+    const osszesen = dij ? parseNum(dij.ar) * parseNum(s.elsz_menny) : 0;
+    return `<tr>
+      <td>${szf ? esc(szf.nev) : `<span style="color:#B4402C;">nincs számfejtési bér</span>`}</td>
+      <td>${szf ? esc(szf.ar) : "—"}</td><td>${szf ? esc(szf.egysegtipus) : "—"}</td>
+      <td>${dij ? esc(dij.nev) : "—"}</td><td>${dij ? esc(dij.ar) : "—"}</td><td>${dij ? esc(dij.egysegtipus) : "—"}</td>
+      <td><input class="field-input" style="width:70px;" value="${esc(s.menny)}" oninput="onTeljigRowInput(${i}, 'menny', this.value)"></td>
+      <td><input class="field-input" style="width:70px;" value="${esc(s.elsz_menny)}" oninput="onTeljigRowInput(${i}, 'elsz_menny', this.value)"></td>
+      <td id="tj_row_osszesen_${i}" class="${mismatch?'mismatch':'match'}">${fmt(osszesen)} Ft${mismatch?" ⚠":" ✓"}</td>
+      <td><input type="checkbox" ${s.kozvetitett?"checked":""} onchange="onTeljigRowInput(${i}, 'kozvetitett', this.checked)"></td>
+      <td><button class="icon-btn" onclick="removeTeljigSor(${i})">🗑</button></td>
+    </tr>`;
+  }).join("");
+  return `<table><thead><tr><th>Számfejtési bér</th><th>Egységár</th><th>Típus</th><th>Vállalási díj</th><th>Egységár</th><th>Típus</th><th>Menny.</th><th>Elsz. menny.</th><th>Összesen</th><th>Közvetített?</th><th></th></tr></thead>
+    <tbody>${rows || `<tr><td colspan="11" style="text-align:center;color:#9A9584;padding:18px;">Nincs rögzített sor — válassz egy vállalási díjat és kattints a "+" gombra.</td></tr>`}</tbody></table>`;
+}
+function renderTeljigKoltsegTable(p){
+  const rows = teljigKoltsegSorok.map((k,i) => {
+    const src = p.koltsegek.find(c => c.id === k.koltseg_id);
+    const osszeg = src ? parseNum(src.osszeg) * (parseNum(k.szorzo)||1) : 0;
+    return `<tr>
+      <td>${src ? esc(src.nev) : "—"}</td><td>${src ? esc(src.osszeg) : "—"}</td>
+      <td><input class="field-input" style="width:70px;" value="${esc(k.szorzo)}" oninput="onTeljigKoltsegInput(${i}, this.value)"></td>
+      <td id="tj_koltseg_osszeg_${i}">${fmt(osszeg)} Ft</td>
+      <td><button class="icon-btn" onclick="removeTeljigKoltsegSor(${i})">🗑</button></td>
+    </tr>`;
+  }).join("");
+  return `<table><thead><tr><th>Költség</th><th>Költség összeg</th><th>Szorzó</th><th>Teljig összeg</th><th></th></tr></thead>
+    <tbody>${rows || `<tr><td colspan="5" style="text-align:center;color:#9A9584;padding:16px;">Nincs hozzárendelt költség.</td></tr>`}</tbody></table>`;
+}
+
+function renderTeljigModal(){
+  const p = projects.find(x => x.id === selectedId);
+  const t = { sorok: teljigSorok, koltseg_sorok: teljigKoltsegSorok };
+  const tot = computeTeljigTotals(p, t);
+  const dijOptions = p.dijak.map(d=>`<option value="${d.id}">${d.nev} — ${d.ar} ${d.egysegtipus}</option>`).join("") || `<option value="">Nincs vállalási díj a projektben</option>`;
+  const koltsegOptions = p.koltsegek.map(k=>`<option value="${k.id}">${k.nev} — ${k.osszeg} Ft</option>`).join("") || `<option value="">Nincs rögzített költség a projektben</option>`;
+
+  document.getElementById("teljig_content").innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-size:16px;font-weight:700;color:#1C2536;">${teljigEditId ? "Teljig szerkesztése — "+esc(teljigHeader.azonosito) : "Teljesítés igazolás létrehozása"}</div>
+      <button onclick="closeModal('teljigOverlay')" style="background:none;border:none;cursor:pointer;color:#9A9584;font-size:18px;">×</button>
+    </div>
+    <div class="grid4" style="margin-top:16px;">
+      <div class="field"><span class="label">Állapot</span><span class="badge status-${teljigHeader.statusz}">${esc(teljigHeader.statusz)}</span></div>
+      <div class="field"><span class="label">Bevétel (Számlasorok)</span><div id="tj_sum_bevetel" style="font-weight:600;">${fmt(tot.bevetel)} Ft</div></div>
+      <div class="field"><span class="label">Tagi bér + Költségek</span><div id="tj_sum_koltseg" style="font-weight:600;">${fmt(tot.tagiber + tot.koltseg)} Ft</div></div>
+      <div class="field"><span class="label">Fedezet</span><div id="tj_sum_fedezet" class="${tot.fedezet<0?'mismatch':'match'}" style="font-weight:700;">${fmt(tot.fedezet)} Ft</div></div>
+    </div>
+    <div class="grid3" style="margin-top:14px;">
+      <label class="field"><span class="label req">Teljig dátuma</span><input class="field-input" id="tj_datuma" value="${esc(teljigHeader.teljig_datuma)}"></label>
+      <label class="field"><span class="label req">Elszámolási időszak</span><input class="field-input" id="tj_idoszak" value="${esc(teljigHeader.idoszak)}"></label>
+      <label class="field"><span class="label">Számla PO száma</span><input class="field-input" id="tj_po" value="${esc(teljigHeader.szl_po)}"></label>
+    </div>
+    <div class="grid2" style="margin-top:14px;">
+      <div class="field"><span class="label req">Számlázási időszak kezdete és vége</span>
+        <div style="display:flex;gap:6px;align-items:center;"><input class="field-input" id="tj_szlk" value="${esc(teljigHeader.szl_idoszak_kezdete)}"><span>→</span><input class="field-input" id="tj_szlv" value="${esc(teljigHeader.szl_idoszak_vege)}"></div>
+      </div>
+      <label class="field"><span class="label">Megjegyzés</span><textarea class="field-input" id="tj_megjegyzes" rows="2">${esc(teljigHeader.megjegyzes)}</textarea></label>
+    </div>
+    <label class="checkbox-row" style="margin-top:10px;"><input type="checkbox" id="tj_csoport" ${teljigHeader.csoportositas?"checked":""}> Költségek csoportosítása nyomtatás nézetben?</label>
+
+    <div class="section-head">Vállalási díjak — óraegyeztetés (Számfejtési bér ↔ Vállalási díj)</div>
+    <div style="display:flex;gap:8px;margin-bottom:10px;">
+      <select class="field-input" id="tj_dij_select">${dijOptions}</select>
+      <button class="btn-primary sm" onclick="addTeljigSor()">+</button>
+    </div>
+    <div class="card" id="tj_sor_table" style="overflow:hidden;overflow-x:auto;">${renderTeljigSorTable(p)}</div>
+    <div style="font-size:12px;color:#8A8570;margin-top:8px;">A <b>Menny.</b> (kifizetett óraszám a Számfejtési bér alapján) és az <b>Elsz. menny.</b> (kiszámlázott óraszám a Vállalási díj alapján) egyezését jelzi a piros/zöld szín — ez a hónap végi kontroll.</div>
+
+    <div class="section-head">Közvetlen költségek</div>
+    <div style="display:flex;gap:8px;margin-bottom:10px;">
+      <select class="field-input" id="tj_koltseg_select">${koltsegOptions}</select>
+      <button class="btn-primary sm" onclick="addTeljigKoltsegSor()">+</button>
+    </div>
+    <div class="card" id="tj_koltseg_table" style="overflow:hidden;">${renderTeljigKoltsegTable(p)}</div>
+
+    <div class="section-head">Dokumentumok</div>
+    <div style="color:#9A9584;font-size:13px;">A teljig mentése után tölthetők fel a kapcsolódó dokumentumok.</div>
+
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:20px;border-top:1px solid #E4E0D6;padding-top:16px;">
+      <button class="btn-ghost" onclick="closeModal('teljigOverlay')">Mégse</button>
+      <button class="btn-primary" onclick="saveTeljig()">💾 Mentés</button>
+    </div>`;
+}
+
+function refreshTeljigSummary(){
+  const p = projects.find(x => x.id === selectedId);
+  const tot = computeTeljigTotals(p, { sorok: teljigSorok, koltseg_sorok: teljigKoltsegSorok });
+  document.getElementById("tj_sum_bevetel").textContent = fmt(tot.bevetel) + " Ft";
+  document.getElementById("tj_sum_koltseg").textContent = fmt(tot.tagiber + tot.koltseg) + " Ft";
+  const fed = document.getElementById("tj_sum_fedezet");
+  fed.textContent = fmt(tot.fedezet) + " Ft";
+  fed.className = tot.fedezet < 0 ? "mismatch" : "match";
+}
+function onTeljigRowInput(i, field, value){
+  teljigSorok[i][field] = value;
+  const p = projects.find(x => x.id === selectedId);
+  const dij = p.dijak.find(d => d.id === teljigSorok[i].dij_id);
+  const osszesen = dij ? parseNum(dij.ar) * parseNum(teljigSorok[i].elsz_menny) : 0;
+  const mismatch = parseNum(teljigSorok[i].menny) !== parseNum(teljigSorok[i].elsz_menny);
+  const cell = document.getElementById(`tj_row_osszesen_${i}`);
+  if (cell) { cell.textContent = fmt(osszesen) + " Ft" + (mismatch ? " ⚠" : " ✓"); cell.className = mismatch ? "mismatch" : "match"; }
+  refreshTeljigSummary();
+}
+function addTeljigSor(){
+  const sel = document.getElementById("tj_dij_select");
+  if (!sel.value) { showToast("Nincs kiválasztható vállalási díj — vedd fel előbb a Díjak fülön."); return; }
+  teljigSorok.push({ dij_id: Number(sel.value), menny: "", elsz_menny: "", kozvetitett: false });
+  const p = projects.find(x => x.id === selectedId);
+  document.getElementById("tj_sor_table").innerHTML = renderTeljigSorTable(p);
+  refreshTeljigSummary();
+}
+function removeTeljigSor(i){
+  teljigSorok.splice(i,1);
+  const p = projects.find(x => x.id === selectedId);
+  document.getElementById("tj_sor_table").innerHTML = renderTeljigSorTable(p);
+  refreshTeljigSummary();
+}
+function onTeljigKoltsegInput(i, value){
+  teljigKoltsegSorok[i].szorzo = value;
+  const p = projects.find(x => x.id === selectedId);
+  const src = p.koltsegek.find(c => c.id === teljigKoltsegSorok[i].koltseg_id);
+  const osszeg = src ? parseNum(src.osszeg) * (parseNum(value)||1) : 0;
+  const cell = document.getElementById(`tj_koltseg_osszeg_${i}`);
+  if (cell) cell.textContent = fmt(osszeg) + " Ft";
+  refreshTeljigSummary();
+}
+function addTeljigKoltsegSor(){
+  const sel = document.getElementById("tj_koltseg_select");
+  if (!sel.value) { showToast("Nincs kiválasztható költség — vedd fel előbb a Költségek fülön."); return; }
+  teljigKoltsegSorok.push({ koltseg_id: Number(sel.value), szorzo: 1 });
+  const p = projects.find(x => x.id === selectedId);
+  document.getElementById("tj_koltseg_table").innerHTML = renderTeljigKoltsegTable(p);
+  refreshTeljigSummary();
+}
+function removeTeljigKoltsegSor(i){
+  teljigKoltsegSorok.splice(i,1);
+  const p = projects.find(x => x.id === selectedId);
+  document.getElementById("tj_koltseg_table").innerHTML = renderTeljigKoltsegTable(p);
+  refreshTeljigSummary();
+}
+function saveTeljig(){
+  syncTeljigHeaderFromDom();
+  const p = projects.find(x => x.id === selectedId);
+  if (teljigEditId) {
+    const t = p.teljesitesek.find(x => x.id === teljigEditId);
+    Object.assign(t, teljigHeader, { sorok: teljigSorok, koltseg_sorok: teljigKoltsegSorok });
+  } else {
+    const id = Math.max(0, ...p.teljesitesek.map(x=>x.id)) + 1;
+    p.teljesitesek.unshift({
+      id, azonosito: `${p.azonosito.replace("#","B")}00-${100000+Math.floor(Math.random()*899999)}`,
+      idoszak: teljigHeader.idoszak, statusz: "Piszkozat", teljig_datuma: teljigHeader.teljig_datuma,
+      szl_idoszak_kezdete: teljigHeader.szl_idoszak_kezdete, szl_idoszak_vege: teljigHeader.szl_idoszak_vege,
+      szl_po: teljigHeader.szl_po, csoportositas: teljigHeader.csoportositas, megjegyzes: teljigHeader.megjegyzes,
+      sorok: teljigSorok, koltseg_sorok: teljigKoltsegSorok, dokumentumok: []
+    });
+  }
+  closeModal("teljigOverlay");
+  showToast("Teljesítés igazolás mentve.");
+  render();
+}
+
+// --- Generikus (fallback) ---
+function openGenericModal(key){
+  genericContext = key;
+  const cfg = GENERIC_CONFIG[key];
+  document.getElementById("gf_title").textContent = cfg.title;
+  document.getElementById("genericFields").innerHTML = cfg.fields.map(([k,label])=>`<input class="field-input" id="gf_${k}" placeholder="${label}">`).join("");
+  openModal("genericOverlay");
+}
+function createGenericItem(){
+  const cfg = GENERIC_CONFIG[genericContext];
+  const item = { id: Date.now() };
+  let valid = true;
+  cfg.fields.forEach(([k]) => {
+    const v = document.getElementById(`gf_${k}`).value.trim();
+    if (!v && k === cfg.fields[0][0]) valid = false;
+    item[k] = v;
+  });
+  if (!valid) { showToast("Töltsd ki a kötelező mezőt."); return; }
+  const p = projects.find(x => x.id === selectedId);
+  p[genericContext].unshift(item);
+  closeModal("genericOverlay");
+  showToast("Tétel mentve.");
+  render();
+}
+
+// --- Dokumentum feltöltés (projekt szintű, Dokumentumok fül) ---
+function confirmUpload(){
+  if (!pendingFileName) { showToast("Válassz ki egy fájlt a feltöltéshez."); return; }
+  const p = projects.find(x => x.id === selectedId);
+  p.dokumentumok.unshift({
+    id: Date.now(), nev: pendingFileName, tipus: document.getElementById("up_tipus").value,
+    idoszak: document.getElementById("up_idoszak").value || "—", megjegyzes: document.getElementById("up_megjegyzes").value,
+    feltolto: "Kott Zoltán #—", meret: "—", feltoltve: "2026-07-04", statusz: "Feltöltve"
+  });
+  closeModal("uploadOverlay");
+  showToast(`${pendingFileName} feltöltve.`);
+  pendingFileName = null;
+  render();
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  fillSelect("dj_egysegtipus", EGYSEG_TIPUSOK);
+  fillSelect("dj_afa", AFA_OPTS);
+  fillSelect("ko_tipus", KOLTSEG_TIPUSOK);
+  fillSelect("ko_afa", AFA_OPTS);
+  document.getElementById("dj_periods").innerHTML = periodBoxesHtml("dj");
+
+  const dz = document.getElementById("dropzone");
+  const input = document.getElementById("fileInput");
+  const setFile = (name) => {
+    pendingFileName = name;
+    document.getElementById("fileNamePreview").textContent = "📄 " + name;
+    document.getElementById("upConfirmBtn").disabled = false;
+    document.getElementById("upConfirmBtn").style.opacity = "1";
+  };
+  input.addEventListener("change", () => { if (input.files[0]) setFile(input.files[0].name); });
+  dz.addEventListener("dragover", (e) => { e.preventDefault(); dz.classList.add("drag"); });
+  dz.addEventListener("dragleave", () => dz.classList.remove("drag"));
+  dz.addEventListener("drop", (e) => {
+    e.preventDefault(); dz.classList.remove("drag");
+    if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0].name);
+  });
+});
+
+render();
+</script>
+</body>
+</html>

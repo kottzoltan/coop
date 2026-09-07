@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ICE — Teljes folyamat demó</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --navy: #1C2536;
+      --navy-2: #243044;
+      --gold: #B8863F;
+      --gold-light: #E9C989;
+      --cream: #F6F4EF;
+      --border: #E4E0D6;
+      --white: #FFFFFF;
+      --ok: #2F6B4F;
+      --warn: #9A6B2D;
+      --blue: #2C7BD6;
+      --danger: #A33B3B;
+      --muted: #6B7280;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 1280px;
+      height: 720px;
+      overflow: hidden;
+      background: var(--navy);
+      font-family: "Source Sans 3", system-ui, sans-serif;
+      color: var(--navy);
+    }
+    #stage {
+      width: 1280px;
+      height: 720px;
+      position: relative;
+      background:
+        radial-gradient(ellipse 80% 60% at 15% 10%, rgba(233,201,137,0.12), transparent 55%),
+        radial-gradient(ellipse 70% 50% at 90% 90%, rgba(184,134,63,0.1), transparent 50%),
+        var(--navy);
+    }
+    .slide {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.45s ease;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      padding: 36px 48px 28px;
+    }
+    .slide.active { opacity: 1; pointer-events: auto; }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--gold-light);
+      margin-bottom: 20px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: Fraunces, Georgia, serif;
+      font-weight: 700;
+      font-size: 22px;
+      letter-spacing: 0.02em;
+    }
+    .brand-mark {
+      width: 34px; height: 34px;
+      border-radius: 8px;
+      background: var(--gold-light);
+      color: var(--navy);
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      font-size: 16px;
+    }
+    .step-pill {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      opacity: 0.85;
+    }
+    .content {
+      display: grid;
+      grid-template-columns: 1.05fr 1fr;
+      gap: 28px;
+      min-height: 0;
+      align-items: stretch;
+    }
+    .content.single { grid-template-columns: 1fr; }
+    .copy h1 {
+      font-family: Fraunces, Georgia, serif;
+      font-size: 42px;
+      line-height: 1.12;
+      color: var(--cream);
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+    .copy .role {
+      display: inline-block;
+      margin-bottom: 12px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(233,201,137,0.18);
+      color: var(--gold-light);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .copy p {
+      color: rgba(246,244,239,0.78);
+      font-size: 18px;
+      line-height: 1.45;
+      max-width: 460px;
+    }
+    .copy ul {
+      margin-top: 18px;
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .copy li {
+      color: var(--cream);
+      font-size: 15px;
+      padding-left: 18px;
+      position: relative;
+    }
+    .copy li::before {
+      content: "";
+      position: absolute;
+      left: 0; top: 8px;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--gold);
+    }
+    .panel {
+      background: var(--cream);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px 18px 16px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.28);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
+    }
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .panel-head h2 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--navy);
+    }
+    .badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 999px;
+    }
+    .badge.warn { background: #F5E6C8; color: var(--warn); }
+    .badge.ok { background: #DCEDE3; color: var(--ok); }
+    .badge.blue { background: #EAF1F7; color: var(--blue); }
+    .badge.gold { background: #F3E6C8; color: var(--gold); }
+    .badge.danger { background: #F3DADA; color: var(--danger); }
+    .row {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr 0.7fr;
+      gap: 8px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      align-items: center;
+    }
+    .row:last-child { border-bottom: 0; }
+    .row .muted { color: var(--muted); font-size: 12px; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      border: 0;
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-weight: 700;
+      font-size: 13px;
+      background: var(--navy);
+      color: white;
+    }
+    .btn.gold { background: var(--gold); color: var(--navy); }
+    .btn.ghost {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--navy);
+    }
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 8px;
+    }
+    .kpi {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+    }
+    .kpi .n {
+      font-family: Fraunces, Georgia, serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--navy);
+    }
+    .kpi .l { font-size: 11px; color: var(--muted); margin-top: 2px; font-weight: 600; }
+    .toast {
+      margin-top: auto;
+      background: var(--navy);
+      color: var(--cream);
+      border-radius: 12px;
+      padding: 14px 16px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      animation: pop 0.5s ease;
+    }
+    .toast .ico {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--gold-light);
+      color: var(--navy);
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+    .toast strong { display: block; font-size: 14px; margin-bottom: 2px; }
+    .toast span { font-size: 12px; opacity: 0.8; }
+    @keyframes pop {
+      from { transform: translateY(10px); opacity: 0; }
+      to { transform: none; opacity: 1; }
+    }
+    .progress {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      margin-top: 18px;
+    }
+    .progress .dot {
+      height: 4px;
+      flex: 1;
+      border-radius: 999px;
+      background: rgba(246,244,239,0.15);
+    }
+    .progress .dot.on { background: var(--gold-light); }
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 16px;
+      color: rgba(246,244,239,0.45);
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .hero-center {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      height: 100%;
+      color: var(--cream);
+    }
+    .hero-center h1 {
+      font-family: Fraunces, Georgia, serif;
+      font-size: 56px;
+      line-height: 1.08;
+      margin: 18px 0 14px;
+    }
+    .hero-center p {
+      font-size: 20px;
+      opacity: 0.78;
+      max-width: 640px;
+    }
+    .chain {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      margin-top: 28px;
+      max-width: 900px;
+    }
+    .chain span {
+      background: rgba(233,201,137,0.12);
+      border: 1px solid rgba(233,201,137,0.35);
+      color: var(--gold-light);
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .phone {
+      background: white;
+      border-radius: 22px;
+      border: 1px solid var(--border);
+      padding: 16px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    .phone .appbar {
+      font-weight: 700;
+      font-size: 14px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .map {
+      height: 120px;
+      border-radius: 12px;
+      background:
+        linear-gradient(135deg, #d9e6f2, #eef3e8),
+        radial-gradient(circle at 60% 45%, #2C7BD6 0 8px, transparent 9px);
+      border: 1px solid var(--border);
+      position: relative;
+      margin-bottom: 12px;
+    }
+    .map::after {
+      content: "GPS · 42 m a helyszíntől";
+      position: absolute;
+      left: 10px; bottom: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--ok);
+      background: rgba(255,255,255,0.9);
+      padding: 3px 8px;
+      border-radius: 999px;
+    }
+    .payline {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .big-amount {
+      font-family: Fraunces, Georgia, serif;
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--ok);
+      margin: 8px 0 4px;
+    }
+    .form-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .form-line .val {
+      font-weight: 700;
+      text-align: right;
+    }
+    .check {
+      display: inline-grid;
+      place-items: center;
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: #DCEDE3;
+      color: var(--ok);
+      font-size: 12px;
+      font-weight: 800;
+    }
+  </style>
+</head>
+<body>
+  <div id="stage">
+
+    <!-- 0 intro -->
+    <section class="slide active" data-id="0" data-ms="4500">
+      <div class="topbar">
+        <div class="brand"><div class="brand-mark">I</div>ICE · Meló-Diák</div>
+        <div class="step-pill">Folyamat demó</div>
+      </div>
+      <div class="hero-center">
+        <div class="role" style="background:rgba(233,201,137,0.18);color:var(--gold-light);padding:4px 12px;border-radius:999px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase">Egy műszak útja — megrendeléstől a NAV-ig</div>
+        <h1>Partner → PV → Diák → Bér → Bevallás</h1>
+        <p>A teljes ICE lánc egy végigjátszásban: megrendelés, visszaigazolás, beosztás, e-jelenlét, jóváhagyások, számfejtés, jóváírás és admin bevallás.</p>
+        <div class="chain">
+          <span>1 Megrendelés</span><span>2 PV OK</span><span>3 Beosztás</span><span>4 E-jelenlét</span>
+          <span>5 Partner ✓</span><span>6 PV ✓</span><span>7 Bérszámfejtés</span><span>8 Bérlap</span><span>9 NAV</span>
+        </div>
+      </div>
+      <div class="footer"><span>ice89.netlify.app</span><span>01 / 11</span></div>
+    </section>
+
+    <!-- 1 partner megrendelés -->
+    <section class="slide" data-id="1" data-ms="7000">
+      <div class="topbar">
+        <div class="brand"><div class="brand-mark">I</div>ICE</div>
+        <div class="step-pill">01 · Partner megrendelés</div>
+      </div>
+      <div class="content">
+        <div class="copy">
+          <span class="role">Partner · Auchan</span>
+          <h1>A partner megrendelést ad le</h1>
+          <p>Új műszakigény a partnerfelületen: dátum, időablak, létszám, helyszín. A sor piszkozatként landol a PV munkaterületen.</p>
+          <ul>
+            <li>Partner: partner.auchan@…</li>
+            <li>Műszak: Raktári segéd · 11:00–15:00</li>
+            <li>Státusz: piszkozat</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <div class="panel-head">
+            <h2>/partner/igeny — Új megrendelés</h2>
+            <span class="badge warn">Piszkozat</span>
+          </div>
+          <div class="form-line"><span>Projekt</span><span class="val">B09450 · Soroksár</span></div>
+          <div class="form-line"><span>Dátum</span><span class="val">2026-07-28</span></div>
+          <div class="form-line"><span>Idő</span><span class="val">11:00 – 15:00</span></div>
+          <div class="form-line"><span>Létszám</span><span class="val">3 fő</span></div>
+          <div class="form-line"><span>Helyszín</span><span class="val">Budapest Soroksár</span></div>
+          <div class="form-line"><span>Munkakör</span><span class="val">Raktári segéd</span></div>
+          <div style="margin-top:16px;display:flex;gap:8px;justify-content:flex-end">
+            <button class="btn ghost">Mégse</button>
+            <button class="btn">Megrendelés elküldése</button>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Partnerfelület</span><span>02 / 11</span></div>
+    </section>
+
+    <!-- 2 PV visszaigazol -->
+    <section class="slide" data-id="2" data-ms="6500">
+      <div class="topbar">
+        <div class="brand"><div class="brand-mark">I</div>ICE</div>
+        <div class="step-pill">02 · PV visszaigazolás</div>
+      </div>
+      <div class="content">
+        <div class="copy">
+          <span class="role">Projektvezető</span>
+          <h1>A PV visszaigazolja a megrendelést</h1>
+          <p>A teendők között megjelenik a piszkozat. Egy kattintás → a műszak publikus, beosztható.</p>
+          <ul>
+            <li>Teendő: Megrendelés visszaigazolása</li>
+            <li>Átmenet: piszkozat → publikus</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <div class="panel-head">
+            <h2>/belso/pv-munkaterulet</h2>
+            <span class="badge gold">Teendő · 1</span>
+          </div>
+          <div class="row">
+            <div><strong>Raktári segéd — demo</strong><div class="muted">B09450 · Auchan</div></div>
+            <div><span class="badge warn">piszkozat</span></div>
+            <div style="text-align:right"><button class="btn gold">Visszaigazolás</button></div>
+          </div>
+          <div class="kpi-grid">
+            <div class="kpi"><div class="n">1</div><div class="l">Piszkozat</div></div>
+            <div class="kpi"><div class="n">0</div><div class="l">PV-re vár</div></div>
+            <div class="kpi"><div class="n">3</div><div class="l">Véglegesített</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>PV munkaterület</span><span>03 / 11</span></div>
+    </section>
+
+    <!-- 3 diák a műszakra -->
+    <section class="slide" data-id="3" data-ms="7000">
+      <div class="topbar">
+        <div class="brand"><div class="brand-mark">I</div>ICE</div>
+        <div class="step-pill">03 · Diák a műszakra</div>
+      </div>
+      <div class="content">
+        <div class="copy">
+          <span class="role">Diák + beosztás</span>
+          <h1>A diák a műszakra kerül</h1>
+          <p>A publikus műszakra a diák jelentkezik / a belső beosztáskezelő hozzárendeli. A diákportálon megjelenik a beosztás.</p>
+          <ul>
+            <li>Teszt Anna · diak.anna@…</li>
+            <li>Státusz: beosztva</li>
+            <li>Lemondás: kezdés előtt 24 órával</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <div class="panel-head">
+            <h2>/diak/beosztas</h2>
+            <span class="badge ok">beosztva</span>
+          </div>
+          <div class="form-line"><span>Műszak</span><span class="val">Raktári segéd — demo ma</span></div>
+          <div class="form-line"><span>Időpont</span><span class="val">2026-07-28 · 11:00–15:00</span></div>
+          <div class="form-line"><span>Helyszín</span><span class="val">Budapest Soroksár</span></div>
+          <div class="form-line"><span>Partner</span><span class="val">Auchan Magyarország</span></div>
+          <div style="margin-top:18px;padding:12px;border-radius:10px;background:#EEF5EE;border:1px solid #C9DFD0;font-size:13px;color:var(--ok);font-weight:700">
+            ✓ Beosztás megerősítve — check-in a műszak időablakában
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Diákportál</span><span>04 / 11</span></div>
+    </section>
+
+    <!-- 4 e-jelenlét -->
+    <section class="slide" data-id="4" data-ms="7500">
+      <div class="topbar">
+        <div class="brand"><div class="brand-mark">I</div>ICE</div>
+        <div class="step-pill">04 · E-jelenlét check-in</div>
+      </div>
+      <div class="content">
+        <div class="copy">
+          <span class="role">Diák · GPS + időablak</span>
+          <h1>Érkezés e-jelenléttel</h1>
+          <p>A diák a telefonján rögzíti az érkezést. Az ICE ellenőrzi az időablakot (−45…+90 perc) és a GPS távolságot.</p>
+          <ul>
+            <li>GPS kötelező · max. 400 m</li>
+            <li>Státusz → rögzített</li>
+            <li>Partner teendőbe kerül</li>
+          </ul>
+        </div>
+        <div class="phone">
+          <div class="appbar"><span>Beosztásaim</span><span style="color:var(--muted);font-size:12px">Teszt Anna</span></div>
+          <div class="map"></div>
+          <div class="form-line"><span>Érkezés ablak</span><span class="val" style="color:var(--ok)">nyitva</span></div>
+          <div class="form-line"><span>GPS</span><span class="val">42 m · OK</span></div>
+          <div style="margin-top:auto;display:flex;gap:8px">
+            <button class="btn" style="flex:1;padding:14px;font-size:15px">Érkezés rögzítése</button>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Diák · e-jelenlét</span><span>05 / 11</span></div>
+    </section>
+
+    <!-- 5 partner jóváhagy -->
+    <section class="slide" data-id="5" data-ms="6500">
+      <div class="topbar">
+        <div class="brand"><div class="brand-mark">I</div>ICE</div>
+        <div class="step-pill">05 · Partner jóváhagyás</div>
+      </div>
+      <div class="content">
+        <div class="copy">
+          <span class="role">Partner</span>
+          <h1>A partner jóváhagyja a jelenlétet</h1>
+          <p>Belépéskor a Teendőid listán: függő jelenléti ívek. Egy ✓ → partner_jóváhagyva, a PV-re vár.</p>
+        </div>
+        <div class="panel">
+          <div class="panel-head">
+            <h2>/partner/jelenletek</h2>
+            <span class="badge warn">Teendő · 3</span>
+          </div>
+          <div class="row">
+            <div><strong>Teszt Anna</strong><div class="muted">11:02 – 15:01 · beosztás</div></div>
+            <div><span class="badge warn">rögzített</span></div>
+            <div style="text-align:right;display:flex;gap:6px;justify-content:flex-end">
+              <button class="btn" style="background:var(--ok)">✓</button>
+              <button class="btn ghost">✕</button>
+            </div>
+          </div>
+          <div class="row">
+            <div><strong>Teszt Balázs</strong><div class="muted">10:58 – 14:55</div></div>
+            <div><span class="badge warn">rögzített</span></div>
+            <div style="text-align:right"><span class="check">✓</span></div>
+          </div>
+          <div class="row">
+            <div><strong>Teszt Csilla</strong><div class="muted">11:05 – 15:00</div></div>
+            <div><span class="badge blue">partner jóváhagyta</span></div>
+            <div style="text-align:right"><span class="check">✓</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Partner · jelenléti ívek</span><span>06 / 11</span></div>
+    </section>
+
+    <!-- 6 PV véglegesít -->
+    <section class="slide" data-id="6" data-ms="6500">
+      <div class="topbar">
+        <div class="brand"><div class="brand-mark">I</div>ICE</div>
+        <div class="step-pill">06 · PV véglegesítés</div>
+      </div>
+      <div class="content">
+        <div class="copy">
+          <span class="role">Projektvezető</span>
+          <h1>A PV véglegesíti a jelenlétet</h1>
+          <p>Partner OK után a sor a PV teendőkben. Véglegesítés → számfejthető állapot, a bérszámfejtés pooljába kerül.</p>
+        </div>
+        <div class="panel">
+          <div class="panel-head">
+            <h2>Jelenlétek (PV-re vár)</h2>
+            <span class="badge blue">3 sor</span>
+          </div>
+          <div class="row">
+            <div><strong>Teszt Anna</strong><div class="muted">B09450 · Auchan</div></div>
+            <div><span class="badge blue">partner OK</span></div>
+            <div style="text-align:right"><button class="btn gold">Véglegesít</button></div>
+          </div>
+          <div class="row">
+            <div><strong>Teszt Balázs</strong><div class="muted">B09450</div></div>
+            <div><span class="badge blue">partner OK</span></div>
+            <div style="text-align:right"><button class="btn gold">Véglegesít</button></div>
+          </div>
+          <div style="margin-top:14px;padding:10px 12px;background:#EEF5EE;border-radius:10px;font-size:13px;font-weight:700;color:var(--ok)">
+            → Állapot: pv_véglegesített · számfejthető
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>PV · véglegesítés</span><span>07 / 11</span></div>
+    </section>
+
+    <!-- 7 bérszámfejtés -->
+    <section class="slide" data-id="7" data-ms="7000">
+      <div class="topbar">
+        <div class="brand"><div class="brand-mark">I</div>ICE</div>
+        <div class="step-pill">07 · Bérszámfejtés</div>
+      </div>
+      <div class="content">
+        <div class="copy">
+          <span class="role">PV / bér</span>
+          <h1>Munkalap és számfejtés készül</h1>
+          <p>A véglegesített jelenlétek munkalapra kerülnek. A havi futás automatikusan összegyűjti a jóváhagyott sorokat — adók, nettó, folyószámla.</p>
+        </div>
+        <div class="panel">
+          <div class="panel-head">
+            <h2>/belso/berszamfejtes/futasok</h2>
+            <span class="badge ok">Futás kész</span>
+          </div>
+          <div class="form-line"><span>Időszak</span><span class="val">2026. július</span></div>
+          <div class="form-line"><span>Munkalapok</span><span class="val">12 db</span></div>
+          <div class="form-line"><span>Bruttó</span><span class="val">1 842 000 Ft</span></div>
+          <div class="form-line"><span>Nettó kifizetés</span><span class="val">1 456 200 Ft</span></div>
+          <div class="kpi-grid" style="margin-top:14px">
+            <div class="kpi"><div class="n" style="font-size:20px">SZJA</div><div class="l">számolva</div></div>
+            <div class="kpi"><div class="n" style="font-size:20px">TB</div><div class="l">számolva</div></div>
+            <div class="kpi"><div class="n" style="font-size:20px">Szocho</div><div class="l">számolva</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Bérszámfejtés</span><span>08 / 11</span></div>
+    </section>
+
+    <!-- 8 diák bérlap + értesítés -->
+    <section class="slide" data-id="8" data-ms="8000">
+      <div class="topbar">
+        <div class="brand"><div class="brand-mark">I</div>ICE</div>
+        <div class="step-pill">08 · Diák bérlap & jóváírás</div>
+      </div>
+      <div class="content">
+        <div class="copy">
+          <span class="role">Diákportál</span>
+          <h1>Bérlap és jóváírás értesítés</h1>
+          <p>A diák megkapja a bérlapot, látja a nettót, és push/app értesítést kap a banki jóváírásról.</p>
+        </div>
+        <div class="phone">
+          <div class="appbar"><span>Bérlap · 2026.07</span><span class="badge ok">Kifizetve</span></div>
+          <div class="big-amount">48 540 Ft</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Nettó jóváírás · OTP · ****4521</div>
+          <div class="payline"><span>Bruttó bér</span><strong>62 000 Ft</strong></div>
+          <div class="payline"><span>SZJA / TB</span><strong>−13 460 Ft</strong></div>
+          <div class="payline"><span>Ledolgozott óra</span><strong>12 óra</strong></div>
+          <div class="toast" style="margin-top:14px">
+            <div class="ico">Ft</div>
+            <div>
+              <strong>Jóváírás megérkezett</strong>
+              <span>48 540 Ft megjelent a számládon · ICE bérkifizetés</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Diák · bér & értesítés</span><span>09 / 11</span></div>
+    </section>
+
+    <!-- 9 NAV -->
+    <section class="slide" data-id="9" data-ms="7500">
+      <div class="topbar">
+        <div class="brand"><div class="brand-mark">I</div>ICE</div>
+        <div class="step-pill">09 · Admin NAV bevallás</div>
+      </div>
+      <div class="content">
+        <div class="copy">
+          <span class="role">Admin / bér</span>
+          <h1>Bevallás generálás és küldés</h1>
+          <p>A számfejtési futásból NAV 08 készül. Az admin ellenőrzi, exportálja / beküldi — a státusz Beküldve.</p>
+        </div>
+        <div class="panel">
+          <div class="panel-head">
+            <h2>/belso/nav-bevallasok</h2>
+            <span class="badge ok">Beküldve</span>
+          </div>
+          <div class="form-line"><span>Típus</span><span class="val">NAV 08</span></div>
+          <div class="form-line"><span>Időszak</span><span class="val">2026. 07.</span></div>
+          <div class="form-line"><span>Személyek</span><span class="val">48 fő</span></div>
+          <div class="form-line"><span>XML export</span><span class="val">nav08_2026_07.xml</span></div>
+          <div style="margin-top:16px;display:flex;gap:8px;justify-content:flex-end">
+            <button class="btn ghost">Előnézet</button>
+            <button class="btn gold">Bevallás elküldése</button>
+          </div>
+          <div style="margin-top:14px;padding:12px;border-radius:10px;background:#EEF5EE;font-size:13px;font-weight:700;color:var(--ok)">
+            ✓ Bevallás elküldve · iktatószám: NAV-08-2026-07-0042
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Admin · NAV</span><span>10 / 11</span></div>
+    </section>
+
+    <!-- 10 outro -->
+    <section class="slide" data-id="10" data-ms="5000">
+      <div class="topbar">
+        <div class="brand"><div class="brand-mark">I</div>ICE · Meló-Diák</div>
+        <div class="step-pill">Kész</div>
+      </div>
+      <div class="hero-center">
+        <h1>A teljes lánc zárva</h1>
+        <p>Megrendelés → PV → beosztás → e-jelenlét → partner/PV jóváhagyás → bérszámfejtés → diák jóváírás → NAV bevallás.</p>
+        <div class="chain">
+          <span>Élő: folyamat-térkép</span>
+          <span>/belso/folyamat-terkep</span>
+          <span>ice89.netlify.app</span>
+        </div>
+      </div>
+      <div class="footer"><span>ICE platform demó</span><span>11 / 11</span></div>
+    </section>
+
+  </div>
+
+  <script>
+    const slides = [...document.querySelectorAll('.slide')];
+    let idx = 0;
+    const params = new URLSearchParams(location.search);
+    const auto = params.get('auto') !== '0';
+    const hold = Number(params.get('hold') || 0);
+
+    function show(i) {
+      idx = ((i % slides.length) + slides.length) % slides.length;
+      slides.forEach((s, n) => s.classList.toggle('active', n === idx));
+      document.title = `ICE demó · ${idx + 1}/${slides.length}`;
+      window.__iceSlide = idx;
+    }
+
+    function next() {
+      if (idx >= slides.length - 1) {
+        window.__iceDone = true;
+        return;
+      }
+      show(idx + 1);
+    }
+
+    show(Number(params.get('slide') || 0));
+
+    if (auto && !params.has('slide')) {
+      function tick() {
+        const ms = Number(slides[idx].dataset.ms || 6000) + hold;
+        window.__iceTimer = setTimeout(() => {
+          if (idx >= slides.length - 1) {
+            window.__iceDone = true;
+            return;
+          }
+          next();
+          tick();
+        }, ms);
+      }
+      tick();
+    }
+
+    window.__iceShow = show;
+    window.__iceNext = next;
+    window.__iceCount = slides.length;
+  </script>
+</body>
+</html>

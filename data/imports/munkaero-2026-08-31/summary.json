@@ -1,0 +1,7 @@
+{
+  "ceg": "munkaero",
+  "partners": 731,
+  "projektek": 129,
+  "munkatarsak": 35,
+  "sql": "netlify/database/migrations/0036_munkaero_szsz_seed.sql"
+}
