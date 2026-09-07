@@ -24,11 +24,11 @@ alwaysApply: true
 3. **`mocks/coop_*_mock.html`** — vizuális és interakciós referencia (belső `/belso` útvonal).
 4. **`docs/Coop_platform_attekintes.png`** — platform áttekintő infografika.
 
-## Portál struktúra (coop89.netlify.app)
-- **`/`** — portálválasztó (diák / partner / belső)
-- **`/diak`** — diákportál + regisztráció → `POST /api/regisztracio` → Netlify Database
-- **`/partner`** — partnerfelület (FK partnerfelület kézikönyv)
-- **`/belso`** — belső Coop mockok (munkatársak)
+## App struktúra (coop89.netlify.app)
+- **`/`** → átirányít **`/belso`**-ra (belső Coop ERP — egyetlen belépési pont)
+- **`/belso/belepes`**, **`/belso/bootstrap`** — munkatársi belépés / első admin
+- **`/belso/*`** — belső ügyvitel (tagok, partnerek, projektek, toborzás, bérszámfejtés…)
+- Nincs nyilvános diák- vagy partnerportál (ICE multi-portal nincs); `/diak/*` és `/partner/*` → `/belso`
 
 A kézikönyvek szövege olvasható: `textutil -convert txt -stdout "FK/fájl.docx"` (macOS).
 

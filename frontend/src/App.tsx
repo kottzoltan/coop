@@ -1,14 +1,6 @@
 import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
-import { DiakPortalLayout } from './layout/DiakPortalLayout';
 import { AppLayout } from './layout/AppLayout';
 import { ToborzasLayout } from './layout/ToborzasLayout';
-import { PartnerPortalLayout } from './layout/PartnerPortalLayout';
-import { LandingPage } from './pages/diak/LandingPage';
-import { RegisztracioPage } from './pages/diak/RegisztracioPage';
-import { BelepesPage } from './pages/diak/BelepesPage';
-import { ProfilPage } from './pages/diak/ProfilPage';
-import { MunkakPage } from './pages/diak/MunkakPage';
-import { PortalValasztoPage } from './pages/PortalValasztoPage';
 import { ErdeklodokPage } from './pages/belso/ErdeklodokPage';
 import { ErdeklodoReszletPage } from './pages/belso/ErdeklodoReszletPage';
 import {
@@ -23,15 +15,11 @@ import { JelentkezesekListaPage } from './pages/belso/JelentkezesekListaPage';
 import { JelentkezesReszletPage } from './pages/belso/JelentkezesReszletPage';
 import { KampanyokListaPage, KampanyReszletPage } from './pages/belso/KampanyokPage';
 import { ReszletesKeresoPage } from './pages/belso/ReszletesKeresoPage';
-import { RequireDiak } from './components/RequireDiak';
-import { PartnerRegisztracioPage } from './pages/partner/PartnerRegisztracioPage';
 import { PartnerRegisztraciokPage } from './pages/belso/PartnerRegisztraciokPage';
 import { PartnerMeghivokPage } from './pages/belso/PartnerMeghivokPage';
 import { BelsoBelepesPage } from './pages/belso/BelsoBelepesPage';
 import { BelsoBootstrapPage } from './pages/belso/BelsoBootstrapPage';
 import { JogosultsagAdminPage } from './pages/belso/JogosultsagAdminPage';
-import { DiakBeosztasPage } from './pages/diak/DiakBeosztasPage';
-import { DiakDokumentumokPage } from './pages/diak/DiakDokumentumokPage';
 import { TagokListaPage, TagReszletPage } from './pages/belso/TagokPage';
 import {
   PartnerekListaPage,
@@ -58,15 +46,6 @@ import { PenzugyPage } from './pages/belso/PenzugyPage';
 import { BlogPage } from './pages/belso/BlogPage';
 import { UgyfelszolgalatPage } from './pages/belso/UgyfelszolgalatPage';
 import { EAlairasPage } from './pages/belso/EAlairasPage';
-import { RequirePartner } from './components/RequirePartner';
-import { PartnerBelepesPage } from './pages/partner/PartnerBelepesPage';
-import { PartnerMeghivoPage } from './pages/partner/PartnerMeghivoPage';
-import {
-  PartnerBeosztasPage,
-  PartnerDashboard,
-  PartnerIgenyPage,
-  PartnerJelenletekPage,
-} from './pages/partner/PartnerPages';
 
 function HirdetesIdRedirect() {
   const { id } = useParams();
@@ -81,28 +60,10 @@ function JelentkezesekRedirect() {
 export function App() {
   return (
     <Routes>
-      <Route index element={<PortalValasztoPage />} />
-
-      <Route path="diak" element={<DiakPortalLayout />}>
-        <Route index element={<LandingPage />} />
-        <Route path="regisztracio" element={<RegisztracioPage />} />
-        <Route path="belepes" element={<BelepesPage />} />
-        <Route path="profil" element={<RequireDiak><ProfilPage /></RequireDiak>} />
-        <Route path="beosztas" element={<RequireDiak><DiakBeosztasPage /></RequireDiak>} />
-        <Route path="dokumentumok" element={<RequireDiak><DiakDokumentumokPage /></RequireDiak>} />
-        <Route path="munkak" element={<MunkakPage />} />
-        <Route path="munkak/:id" element={<MunkakPage />} />
-      </Route>
-
-      <Route path="partner" element={<PartnerPortalLayout />}>
-        <Route path="belepes" element={<PartnerBelepesPage />} />
-        <Route path="regisztracio" element={<PartnerRegisztracioPage />} />
-        <Route path="meghivo" element={<PartnerMeghivoPage />} />
-        <Route index element={<RequirePartner><PartnerDashboard /></RequirePartner>} />
-        <Route path="beosztas" element={<RequirePartner><PartnerBeosztasPage /></RequirePartner>} />
-        <Route path="jelenletek" element={<RequirePartner><PartnerJelenletekPage /></RequirePartner>} />
-        <Route path="igeny" element={<RequirePartner><PartnerIgenyPage /></RequirePartner>} />
-      </Route>
+      {/* Belső Coop ERP — nincs diák/partner portálválasztó */}
+      <Route index element={<Navigate to="/belso" replace />} />
+      <Route path="diak/*" element={<Navigate to="/belso" replace />} />
+      <Route path="partner/*" element={<Navigate to="/belso" replace />} />
 
       <Route path="belso/belepes" element={<BelsoBelepesPage />} />
       <Route path="belso/bootstrap" element={<BelsoBootstrapPage />} />

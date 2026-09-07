@@ -1,6 +1,6 @@
 # Coop
 
-Szövetkezeti és munkaerő-kölcsönzési ERP (ICE fork alapokon).
+Digitális szövetkezet menedzsment (ICE fork alapokon).
 
 ## Modulok (terv)
 

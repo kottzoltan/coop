@@ -33,7 +33,7 @@ export function BelsoBelepesPage() {
   return (
     <MelodiakPageShell
       title="Belső belépés"
-      subtitle="Munkatársi fiók — Netlify Identity"
+      subtitle="Digitális szövetkezet menedzsment"
       eyebrow="Coop"
       heroSize="sm"
       maxWidth="md"
@@ -56,10 +56,6 @@ export function BelsoBelepesPage() {
           {kuldes ? 'Belépés…' : 'Belépés'}
         </button>
         <p className="text-center text-xs text-text-muted">
-          <Link to="/" className="text-gold underline">
-            Portálválasztó
-          </Link>
-          {' · '}
           <Link to="/belso/bootstrap" className="text-gold underline">
             Első admin létrehozása
           </Link>

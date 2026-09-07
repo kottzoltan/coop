@@ -1,5 +1,4 @@
-import { Link, NavLink } from 'react-router-dom';
-import { useSzerep } from '../context/SzerepContext';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import type { Ugycsoport } from '@coop/shared';
 
@@ -35,10 +34,15 @@ function subNavClass({ isActive }: { isActive: boolean }) {
 }
 
 export function Sidebar() {
-  const { torol } = useSzerep();
-  const { me } = useAuth();
+  const navigate = useNavigate();
+  const { me, kijelentkezes } = useAuth();
   const jog = me?.jogosultsagok;
   const belso = me?.szerep === 'belso';
+
+  async function handleKilepes() {
+    await kijelentkezes();
+    navigate('/belso/belepes');
+  }
 
   const eloNav = [
     { to: '/belso/erdeklodok', label: 'Érdeklődő diákok', ugycsoport: 'erdeklodok' as const },
@@ -64,11 +68,16 @@ export function Sidebar() {
 
   return (
     <aside className="flex w-[208px] shrink-0 flex-col bg-navy px-3.5 py-5 text-[#cbd0da]">
-      <div className="mb-4 flex items-center gap-2 border-b border-navy-muted px-2 pb-5">
-        <div className="flex h-[26px] w-[26px] items-center justify-center rounded-[7px] bg-gold-light text-[13px] font-extrabold text-navy">
-          C
+      <div className="mb-4 border-b border-navy-muted px-2 pb-5">
+        <div className="flex items-center gap-2">
+          <div className="flex h-[26px] w-[26px] items-center justify-center rounded-[7px] bg-gold-light text-[13px] font-extrabold text-navy">
+            C
+          </div>
+          <span className="text-sm font-bold text-white">Coop</span>
         </div>
-        <span className="text-sm font-bold text-white">Coop</span>
+        <p className="mt-1.5 pl-[34px] text-[10px] leading-snug text-[#9aa1b4]">
+          Digitális szövetkezet menedzsment
+        </p>
       </div>
 
       <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto">
@@ -118,13 +127,13 @@ export function Sidebar() {
         )}
       </nav>
 
-      <Link
-        to="/"
-        onClick={() => torol()}
-        className="mt-4 block rounded-lg px-2.5 py-2 text-[11px] font-semibold text-[#6e7690] hover:text-gold-light"
+      <button
+        type="button"
+        onClick={() => void handleKilepes()}
+        className="mt-4 block w-full rounded-lg px-2.5 py-2 text-left text-[11px] font-semibold text-[#6e7690] hover:text-gold-light"
       >
-        ← Portálváltás
-      </Link>
+        Kijelentkezés
+      </button>
     </aside>
   );
 }

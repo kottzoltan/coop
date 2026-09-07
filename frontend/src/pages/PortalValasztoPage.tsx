@@ -52,7 +52,7 @@ export function PortalValasztoPage() {
     <div className="flex min-h-screen flex-col bg-page-bg">
       <MelodiakHero
         title="Coop"
-        subtitle="Válaszd ki, milyen szerepkörben szeretnél belépni"
+        subtitle="Digitális szövetkezet menedzsment"
         eyebrow="Coop"
         size="md"
         imagePosition="center_40%"
@@ -75,7 +75,7 @@ export function PortalValasztoPage() {
         </div>
       </MelodiakHero>
       <footer className="border-t border-border py-4 text-center text-xs text-text-muted">
-        ice89.netlify.app — tesztkörnyezet
+        Digitális szövetkezet menedzsment
       </footer>
     </div>
   );
