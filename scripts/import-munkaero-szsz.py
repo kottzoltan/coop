@@ -12,7 +12,7 @@ import openpyxl
 
 ROOT = Path(__file__).resolve().parents[1]
 IMPORT_DIR = ROOT / "data" / "imports" / "munkaero-2026-08-31"
-OUT_SQL = ROOT / "netlify" / "database" / "migrations" / "0036_munkaero_szsz_seed.sql"
+OUT_SQL = ROOT / "scripts" / "sql" / "munkaero_szsz_seed.sql"
 OUT_JSON = ROOT / "data" / "imports" / "munkaero-2026-08-31" / "summary.json"
 
 IRODA = "Munkaerő Humánszolgáltató Szociális Szövetkezet - Iroda"

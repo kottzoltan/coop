@@ -25,11 +25,11 @@ Excel forrás: `data/imports/munkaero-2026-08-31/`
 ```bash
 python3 scripts/import-munkaero-szsz.py
 # → netlify/database/migrations/0035_ceg_tenant.sql
-# → netlify/database/migrations/0036_munkaero_szsz_seed.sql
+# → scripts/sql/munkaero_szsz_seed.sql  (nem auto-migration; külön import)
 ```
 
 Seed (PGlite-en ellenőrizve): **731 partner**, **129 projekt**, **117 szerződés**, **124 kapcsolattartó**, **35 munkatárs**.
 
-Éles DB-hez: Coop Netlify site link + migrációk futtatása (0035, majd 0036).
+Éles DB: a sémamigrációk deploykor futnak. A Munkaerő seed külön (`scripts/sql/…`), ne legyen a migrations mappában (`BEGIN`/`COMMIT` töri a deploy tranzakciót).
 
 ICE-ból átvéve: partner, projekt, fedezet, szereplő-kompenzáció. A diák/tag/bérszámfejtés modulok fokozatosan lecserélődnek / kikerülnek.
