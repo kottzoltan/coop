@@ -13,9 +13,23 @@ export function BelsoBootstrapPage() {
 
   useEffect(() => {
     fetch('/api/auth/bootstrap')
-      .then((r) => r.json())
+      .then(async (r) => {
+        const text = await r.text();
+        try {
+          return JSON.parse(text) as { canBootstrap?: boolean; hiba?: string };
+        } catch {
+          throw new Error(
+            r.ok
+              ? 'Érvénytelen válasz a bootstrap API-tól'
+              : `Bootstrap API hiba (${r.status}). Futnak a Netlify Functions / Database?`,
+          );
+        }
+      })
       .then((d) => setCanBootstrap(!!d.canBootstrap))
-      .catch(() => setCanBootstrap(false));
+      .catch((err) => {
+        setCanBootstrap(false);
+        setHiba(err instanceof Error ? err.message : 'Bootstrap ellenőrzés sikertelen');
+      });
   }, []);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -29,7 +43,15 @@ export function BelsoBootstrapPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
-      const json = await res.json();
+      const text = await res.text();
+      let json: { hiba?: string; ok?: boolean } = {};
+      try {
+        json = JSON.parse(text) as { hiba?: string; ok?: boolean };
+      } catch {
+        throw new Error(
+          `Bootstrap API nem JSON-t adott (${res.status}). Ellenőrizd: Identity bekapcsolva + Netlify Database provisionálva.`,
+        );
+      }
       if (!res.ok) throw new Error(json.hiba ?? 'Bootstrap sikertelen');
       setSiker(
         `Admin létrehozva: ${email}. Jelszó: a megadott érték. Átirányítás belépésre…`,
@@ -52,14 +74,18 @@ export function BelsoBootstrapPage() {
 
   if (!canBootstrap) {
     return (
-      <MelodiakPageShell title="Admin már létezik" eyebrow="Coop" heroSize="sm" maxWidth="md">
-        <p className="text-sm text-text-body">
-          Már van belső felhasználó. Új munkatársat a{' '}
-          <Link to="/belso/admin/jogosultsagok" className="font-semibold text-gold underline">
-            Jogosultságok
-          </Link>{' '}
-          oldalon adhatsz hozzá (admin belépés után).
-        </p>
+      <MelodiakPageShell title="Admin beállítás" eyebrow="Coop" heroSize="sm" maxWidth="md">
+        {hiba ? (
+          <p className="rounded-lg bg-danger-bg px-3 py-2 text-sm text-danger">{hiba}</p>
+        ) : (
+          <p className="text-sm text-text-body">
+            Már van belső felhasználó. Új munkatársat a{' '}
+            <Link to="/belso/admin/jogosultsagok" className="font-semibold text-gold underline">
+              Jogosultságok
+            </Link>{' '}
+            oldalon adhatsz hozzá (admin belépés után).
+          </p>
+        )}
         <Link
           to="/belso/belepes"
           className="mt-4 inline-block text-sm font-semibold text-gold underline"
